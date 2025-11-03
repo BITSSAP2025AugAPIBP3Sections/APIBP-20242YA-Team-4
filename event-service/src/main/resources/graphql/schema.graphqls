@@ -1,0 +1,12 @@
+type Query {
+    events: [Event!]!
+    eventById(id: ID!): Event
+}
+
+type Event {
+    id: ID!
+    title: String!
+    description: String
+    location: String
+    eventDate: String!
+}
