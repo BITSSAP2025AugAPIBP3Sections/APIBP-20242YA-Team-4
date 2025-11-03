@@ -6,15 +6,23 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [password, setPassword] = useState("");
+  const [reEnterPassword, setReEnterPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+      if (password !== reEnterPassword) {
+              toast.error("Passwords do not match!");
+              return;
+            }
     setIsLoading(true);
 
     // TODO: Implement actual update logic
@@ -39,6 +47,14 @@ const Profile = () => {
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
               {user?.role === "organizer" ? "Event Organizer" : "Event Attendee"}
             </div>
+            {user?.role === "organizer" && (
+                          <Button
+                            className="mt-4 bg-primary hover:bg-primary-hover"
+                            onClick={() => navigate("/create-event")}
+                          >
+                            Create Event
+                          </Button>
+                        )}
           </div>
         </Card>
 
@@ -67,16 +83,28 @@ const Profile = () => {
                 required
               />
             </div>
-
+              <div className="space-y-2"
+              onClick={(e) => e.stopPropagation()}>
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input
+                                      id="password"
+                                      type="password"
+                                      value={password}
+                                      onChange={(e) => setPassword(e.target.value)}
+                                      required
+                                    />
+                         </div>
             <div className="space-y-2">
               <Label htmlFor="role">Account Type</Label>
-              <Input
-                id="role"
-                type="text"
-                value={user?.role === "organizer" ? "Event Organizer" : "Event Attendee"}
-                disabled
-                className="bg-muted"
-              />
+            <select
+              id="role"
+              value={user?.role}
+//               onChange={(e) => console.log(e.target.value)} // Replace with your handler
+              className="bg-muted block w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="organizer">Event Organizer</option>
+              <option value="attendee">Event Attendee</option>
+            </select>
             </div>
 
             <Button

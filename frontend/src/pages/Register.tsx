@@ -11,18 +11,29 @@ const Profile = () => {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [password, setPassword] = useState("");
+  const [reEnterPassword, setReEnterPassword] = useState("");
+  const [role, setRole] = useState("attendee");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+     if (password !== reEnterPassword) {
+            toast.error("Passwords do not match!");
+            return;
+          }
     setIsLoading(true);
 
     // TODO: Implement actual update logic
-    setTimeout(() => {
-      toast.success("Profile updated successfully!");
-      setIsLoading(false);
-    }, 1000);
-  };
+   setTimeout(() => {
+         toast.success("Sign-up successful!");
+         setIsLoading(false);
+
+         if (role === "organizer") {
+           navigate("/event-organizer");
+         }
+       }, 1000);
+     };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -67,16 +78,40 @@ const Profile = () => {
                 required
               />
             </div>
+            <div className="space-y-2"
+            onClick={(e) => e.stopPropagation()}>
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+             </div>
+              <div className="space-y-2"
+              onClick={(e) => e.stopPropagation()}>
+                         <Label htmlFor="reEnterPassword">Re-enter Password</Label>
+                         <Input
+                           id="reEnterPassword"
+                           type="password"
+                           value={reEnterPassword}
+                           onChange={(e) => setReEnterPassword(e.target.value)}
+                           required
+                         />
+               </div>
 
             <div className="space-y-2">
               <Label htmlFor="role">Account Type</Label>
-              <Input
+              <select
                 id="role"
-                type="text"
-                value={user?.role === "organizer" ? "Event Organizer" : "Event Attendee"}
-                disabled
-                className="bg-muted"
-              />
+                value={user?.role}
+                onChange={(e) => console.log(e.target.value)} // Replace with your handler
+                className="bg-muted block w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="organizer">Event Organizer</option>
+                <option value="attendee">Event Attendee</option>
+              </select>
             </div>
 
             <Button
@@ -84,7 +119,7 @@ const Profile = () => {
               className="w-full bg-primary hover:bg-primary-hover"
               disabled={isLoading}
             >
-              {isLoading ? "Updating..." : "Update Profile"}
+              {isLoading ? "Updating..." : "Sign Up"}
             </Button>
           </form>
         </Card>
