@@ -1,0 +1,25 @@
+type Ticket {
+  id: ID!
+  userId: ID!
+  eventId: ID!
+  seatNumber: String
+  price: Float
+  status: String
+}
+
+type Query {
+  getTicketById(ticketId: ID!): Ticket
+  getTicketsByUser(userId: ID!): [Ticket]
+  getTicketsByEvent(eventId: ID!): [Ticket]
+}
+
+type Mutation {
+  bookTicket(
+    userId: ID!,
+    eventId: ID!,
+    seatNumber: String,
+    price: Float
+  ): Ticket
+
+  cancelTicket(ticketId: ID!): String
+}
