@@ -1,0 +1,96 @@
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import { User } from "lucide-react";
+
+const Profile = () => {
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // TODO: Implement actual update logic
+    setTimeout(() => {
+      toast.success("Profile updated successfully!");
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8">My Profile</h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="p-6 lg:col-span-1">
+          <div className="text-center">
+            <div className="w-24 h-24 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="h-12 w-12 text-white" />
+            </div>
+            <h2 className="text-xl font-bold mb-1">{user?.name}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{user?.email}</p>
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              {user?.role === "organizer" ? "Event Organizer" : "Event Attendee"}
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 lg:col-span-2">
+          <h2 className="text-2xl font-bold mb-6">Account Information</h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Account Type</Label>
+              <Input
+                id="role"
+                type="text"
+                value={user?.role === "organizer" ? "Event Organizer" : "Event Attendee"}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary-hover"
+              disabled={isLoading}
+            >
+              {isLoading ? "Updating..." : "Update Profile"}
+            </Button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
