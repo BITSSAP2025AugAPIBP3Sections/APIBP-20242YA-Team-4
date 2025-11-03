@@ -1,8 +1,9 @@
-package com.openEvent.event_service.EventControllers;
+package com.openEvent.event_service.Controllers;
 
 
-import com.openEvent.event_service.EventEntity.Event;
-import com.openEvent.event_service.EventServices.EventService;
+import com.openEvent.event_service.Entities.Event;
+import com.openEvent.event_service.Services.EventService;
+
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;

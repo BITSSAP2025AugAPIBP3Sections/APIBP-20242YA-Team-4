@@ -1,7 +1,8 @@
-package com.openEvent.event_service.EventControllers;
+package com.openEvent.event_service.Controllers;
 
-import com.openEvent.event_service.EventEntity.Event;
-import com.openEvent.event_service.EventServices.EventService;
+import com.openEvent.event_service.Entities.Event;
+import com.openEvent.event_service.Services.EventService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

@@ -1,4 +1,4 @@
-package com.openEvent.event_service.EventEntity;
+package com.openEvent.event_service.Entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

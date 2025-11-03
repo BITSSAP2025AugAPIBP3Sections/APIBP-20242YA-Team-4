@@ -1,6 +1,8 @@
 type Query {
     events: [Event!]!
     eventById(id: ID!): Event
+    notifications: [Notification!]!
+    notificationById(id: ID!): Notification
 }
 
 type Event {
@@ -9,4 +11,12 @@ type Event {
     description: String
     location: String
     eventDate: String!
+}
+
+type Notification {
+    id: ID!
+    title: String!
+    message: String
+    recipient: String
+    sentAt: String!
 }
