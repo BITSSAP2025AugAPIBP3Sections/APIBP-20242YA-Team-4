@@ -1,7 +1,7 @@
 package com.openEvent.event_service.Services;
 
 import com.openEvent.event_service.Entities.Ticket;
-import com.openEvent.event_service.Repositories.TicketRepository;
+import com.openEvent.event_service.Repositories.TicketRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class TicketService {
 
     @Autowired
-    private TicketRepository ticketRepository;
+    private TicketRepositoryInterface ticketRepository;
 
     public Ticket bookTicket(Ticket ticket) {
         ticket.setStatus("BOOKED");
