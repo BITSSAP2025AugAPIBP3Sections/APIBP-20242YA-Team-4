@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/payments")
@@ -66,6 +67,27 @@ public class PaymentController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "Payment not found"));
+        }
+    }
+
+    @GetMapping("/{paymentId}")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Payment retrieved successfully",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Payment.class))),
+        @ApiResponse(responseCode = "404", description = "Payment not found")
+    })
+    public ResponseEntity<?> getPaymentById(@PathVariable Long paymentId) {
+        try {
+            Optional<Payment> payment = paymentService.getPaymentById(paymentId);
+            if (payment.isPresent()) {
+                return ResponseEntity.ok(payment.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Payment not found"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch payment: " + e.getMessage()));
         }
     }
 

@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/feedback")
@@ -54,6 +55,27 @@ public class FeedbackController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Failed to submit feedback: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Feedback retrieved successfully",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Feedback.class))),
+        @ApiResponse(responseCode = "404", description = "Feedback not found")
+    })
+    public ResponseEntity<?> getFeedbackById(@PathVariable Long id) {
+        try {
+            Optional<Feedback> feedback = feedbackService.getFeedbackById(id);
+            if (feedback.isPresent()) {
+                return ResponseEntity.ok(feedback.get());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Feedback not found"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch feedback: " + e.getMessage()));
         }
     }
 
