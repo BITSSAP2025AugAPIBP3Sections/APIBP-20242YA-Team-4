@@ -13,6 +13,7 @@ public class User {
     private Long id;
 
     private String fullName;
+    private String username;
     private String email;
     private String password;
 
@@ -43,6 +44,18 @@ public class User {
 
     public String getPassword() {
         return this.password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public boolean isVerified() {
+        return this.verified;
+    }
+
+    public void setUsername(String email) {
+        this.email = email;
     }
 
     // Getters, setters, constructors
