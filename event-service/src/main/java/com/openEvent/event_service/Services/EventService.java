@@ -1,7 +1,8 @@
-package com.openEvent.event_service.EventServices;
+package com.openEvent.event_service.Services;
 
-import com.openEvent.event_service.EventEntity.Event;
-import com.openEvent.event_service.EventRepositories.EventRepositoryInterface;
+import com.openEvent.event_service.Entities.Event;
+import com.openEvent.event_service.Repositories.EventRepositoryInterface;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
