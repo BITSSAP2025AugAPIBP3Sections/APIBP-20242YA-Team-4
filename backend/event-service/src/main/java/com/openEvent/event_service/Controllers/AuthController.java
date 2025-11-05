@@ -1,30 +1,111 @@
 package com.openEvent.event_service.Controllers;
 
+import com.openEvent.event_service.Entities.User;
+import com.openEvent.event_service.Services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.openEvent.event_service.Services.AuthenticationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
     private AuthenticationService authService;
 
     @PostMapping("/login")
-    public String login(@RequestParam String username, @RequestParam String password) {
-        if (authService.validateUserCredentials(username, password)) {
-            return authService.generateToken(username);
-        } else {
-            return "Invalid credentials!";
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                value = "{\n" +
+                       "  \"username\": \"testuser\",\n" +
+                       "  \"password\": \"testpassword\"\n" +
+                       "}"
+            )
+        )
+    )
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        try {
+            String username = loginRequest.get("username");
+            String password = loginRequest.get("password");
+            
+            System.out.println("Login attempt for username: " + username); // Debug log
+            
+            if (authService.validateUserCredentials(username, password)) {
+                String token = authService.generateToken(username);
+                User user = authService.getUserByUsername(username);
+                return ResponseEntity.ok(Map.of(
+                    "message", "Login successful",
+                    "token", token,
+                    "user", Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "fullName", user.getFullName() != null ? user.getFullName() : "",
+                        "role", user.getRole().toString(),
+                        "verified", user.isVerified()
+                    )
+                ));
+            } else {
+                System.out.println("Invalid credentials for username: " + username); // Debug log
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid credentials"));
+            }
+        } catch (Exception e) {
+            System.out.println("Login error: " + e.getMessage()); // Debug log
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Login failed: " + e.getMessage()));
         }
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> register(@RequestParam String username, @RequestParam String password) {
-        authService.register(username, password);
-        return ResponseEntity.ok("User registered successfully!");
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        content = @Content(
+            mediaType = "application/json",
+            examples = @ExampleObject(
+                value = "{\n" +
+                       "  \"username\": \"john_doe\",\n" +
+                       "  \"email\": \"john@example.com\",\n" +
+                       "  \"password\": \"password123\",\n" +
+                       "  \"fullName\": \"John Doe\",\n" +
+                       "  \"role\": \"ATTENDEE\"\n" +
+                       "}"
+            )
+        )
+    )
+    public ResponseEntity<?> register(@RequestBody Map<String, String> registerRequest) {
+        try {
+            String username = registerRequest.get("username");
+            String email = registerRequest.get("email");
+            String password = registerRequest.get("password");
+            String fullName = registerRequest.get("fullName");
+            String role = registerRequest.getOrDefault("role", "ATTENDEE"); // Default to ATTENDEE
+            
+            System.out.println("Registration attempt for username: " + username + ", email: " + email + ", role: " + role);
+            
+            User user = authService.register(username, email, password, fullName, role);
+            return ResponseEntity.ok(Map.of(
+                "message", "User registered successfully!",
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "fullName", user.getFullName() != null ? user.getFullName() : "",
+                "role", user.getRole().toString(),
+                "verified", user.isVerified()
+                // NOTE: Never include password in response for security reasons
+            ));
+        } catch (Exception e) {
+            System.out.println("Registration error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Registration failed: " + e.getMessage()));
+        }
     }
-
 }

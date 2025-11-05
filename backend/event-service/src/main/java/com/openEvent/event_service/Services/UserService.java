@@ -1,6 +1,5 @@
 package com.openEvent.event_service.Services;
 
-import com.openEvent.event_service.DTO.AuthRequest;
 import com.openEvent.event_service.Entities.User;
 import com.openEvent.event_service.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,52 +15,70 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
-    private JwtService jwtService;
 
-    public String registerUser(User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return "User already exists!";
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return "User registered successfully!";
-    }
-
-    public String login(AuthRequest request) {
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return jwtService.generateToken(user.getEmail());
-        }
-        throw new RuntimeException("Invalid credentials");
-    }
-
-        public Optional<User> getUserByEmail(String email) {
-            return userRepository.findByEmail(email);
-        }
-
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    public User updateUser(Long id, User updatedUser) {
-        return userRepository.findById(id).map(user -> {
-            user.setEmail(updatedUser.getEmail());
-            user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-            user.setVerified(updatedUser.isVerified());
-            // Add other fields as needed
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User updateUserProfile(Long id, String fullName, String email) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            
+            if (fullName != null) {
+                user.setFullName(fullName);
+            }
+            if (email != null && !email.equals(user.getEmail())) {
+                if (userRepository.existsByEmail(email)) {
+                    throw new RuntimeException("Email already exists");
+                }
+                user.setEmail(email);
+            }
+            user.setUpdatedAt(LocalDateTime.now());
+            
             return userRepository.save(user);
-        }).orElseThrow(() -> new RuntimeException("User not found"));
+        }
+        throw new RuntimeException("User not found with id: " + id);
+    }
+
+    public boolean changePassword(Long id, String currentPassword, String newPassword) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return false;
+            }
+            
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return true;
+        }
+        throw new RuntimeException("User not found with id: " + id);
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("User not found with id: " + id);
+        }
     }
 }
