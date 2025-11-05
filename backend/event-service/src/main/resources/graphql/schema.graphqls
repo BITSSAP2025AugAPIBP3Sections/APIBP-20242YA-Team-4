@@ -1,0 +1,88 @@
+type Query {
+    events: [Event!]!
+    eventById(id: ID!): Event
+    notifications: [Notification!]!
+    notificationById(id: ID!): Notification
+    getTicketById(ticketId: ID!): Ticket
+    getTicketsByUser(userId: ID!): [Ticket]
+    getTicketsByEvent(eventId: ID!): [Ticket]
+    # Payment queries
+    payment(id: ID!): Payment
+    paymentsByUser(userId: ID!): [Payment]
+    # Feedback queries
+    feedback(id: ID!): Feedback
+    feedbackByEvent(eventId: ID!): [Feedback]
+    feedbackByUser(userId: ID!): [Feedback]
+}
+
+type Mutation {
+  bookTicket(
+    userId: ID!,
+    eventId: ID!,
+    seatNumber: String,
+    price: Float
+  ): Ticket
+
+  cancelTicket(ticketId: ID!): String
+
+  # Payment refund mutation
+  refundPayment(id: ID!): Payment
+
+  # Feedback mutation
+  deleteFeedback(id: ID!): Boolean
+}
+
+type Event {
+    id: ID!
+    title: String!
+    description: String
+    location: String
+    eventDate: String!
+}
+
+type Notification {
+    id: ID!
+    title: String!
+    message: String
+    recipient: String
+    sentAt: String!
+}
+
+type Ticket {
+  id: ID!
+  userId: ID!
+  eventId: ID!
+  seatNumber: String
+  price: Float
+  status: String
+}
+
+type Payment {
+    id: ID!
+    userId: ID!
+    eventId: ID!
+    amount: Float!
+    paymentMethod: String!
+    status: PaymentStatus!
+    createdAt: String!
+    updatedAt: String!
+    transactionId: String
+    failureReason: String
+}
+
+type Feedback {
+    id: ID!
+    userId: ID!
+    eventId: ID!
+    comment: String!
+    rating: Int!
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum PaymentStatus {
+    PENDING
+    SUCCESS
+    FAILED
+    REFUNDED
+}
