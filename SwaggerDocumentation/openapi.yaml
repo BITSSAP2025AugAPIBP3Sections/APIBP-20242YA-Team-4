@@ -274,22 +274,22 @@
           "required": true
         },
         "responses": {
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "/": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
           "200": {
             "description": "Feedback updated successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Feedback"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "/": {
+                "schema": {
+                  "type": "object"
                 }
               }
             }
@@ -821,22 +821,22 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Payment status updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Payment"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Invalid payment status",
             "content": {
               "/": {
                 "schema": {
                   "type": "object"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Payment status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
                 }
               }
             }
