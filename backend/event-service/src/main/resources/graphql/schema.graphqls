@@ -1,3 +1,20 @@
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    fullName: String
+    role: Role!
+    verified: Boolean!
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum Role {
+    ADMIN
+    ORGANIZER
+    ATTENDEE
+}
+
 type Query {
     events: [Event!]!
     eventById(id: ID!): Event
@@ -13,6 +30,11 @@ type Query {
     feedback(id: ID!): Feedback
     feedbackByEvent(eventId: ID!): [Feedback]
     feedbackByUser(userId: ID!): [Feedback]
+    # User queries
+    getAllUsers: [User!]!
+    getUserById(id: ID!): User
+    getUserByUsername(username: String!): User
+    getUserByEmail(email: String!): User
 }
 
 type Mutation {
