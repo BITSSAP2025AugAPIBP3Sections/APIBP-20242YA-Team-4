@@ -27,6 +27,7 @@ public class Notification {
     private String recipient;
 
     @Column(name = "sent_at", nullable = false)
+    @org.hibernate.annotations.CreationTimestamp
     private LocalDateTime sentAt;
 
     public Notification() { }
