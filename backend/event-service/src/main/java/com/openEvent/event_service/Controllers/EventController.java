@@ -2,19 +2,14 @@ package com.openEvent.event_service.Controllers;
 
 import com.openEvent.event_service.Entities.Event;
 import com.openEvent.event_service.Services.EventService;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -27,31 +22,74 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Event>> getAllEvents() {
-        return ResponseEntity.ok(eventService.getAllEvents());
+    public ResponseEntity<?> getAllEvents() {
+        try {
+            List<Event> events = eventService.getAllEvents(false);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get all events: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Event> createEvent(@RequestBody Event event) {
-        Event created = eventService.createEvent(event);
-        return ResponseEntity.status(201).body(created);
+    public ResponseEntity<?> createEvent(@RequestBody Event event) {
+        try {
+            Event created = eventService.createEvent(event);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to create event: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Event> getEventById(@PathVariable Long id) {
-        Event event = eventService.getEventById(id);
-        return ResponseEntity.ok(event);
+    public ResponseEntity<?> getEventById(@PathVariable Long id) {
+        try {
+            Event event = eventService.getEventById(id);
+            return ResponseEntity.ok(event);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to get event with id " + id + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
+
+    @GetMapping("/fail")
+    public ResponseEntity<?> getAllEventsFail() {
+        try {
+            List<Event> events = eventService.getAllEvents(true);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Forced failure endpoint failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Event> updateEvent(@PathVariable Long id, @RequestBody Event eventDetails) {
-        Event updated = eventService.updateEvent(id, eventDetails);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody Event eventDetails) {
+        try {
+            Event updated = eventService.updateEvent(id, eventDetails);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to update event with id " + id + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
-        eventService.deleteEvent(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteEvent(@PathVariable Long id) {
+        try {
+            eventService.deleteEvent(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to delete event with id " + id + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 }
