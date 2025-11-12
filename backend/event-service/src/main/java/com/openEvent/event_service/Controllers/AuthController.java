@@ -1,12 +1,10 @@
-package com.openEvent.event_service.Controllers;
+package src.main.java.com.openEvent.event_service.Controllers;
 
-import com.openEvent.event_service.Entities.User;
 import com.openEvent.event_service.Services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 
@@ -41,17 +39,17 @@ public class AuthController {
             
             if (authService.validateUserCredentials(username, password)) {
                 String token = authService.generateToken(username);
-                User user = authService.getUserByUsername(username);
+                com.openEvent.event_service.Entities.Attendee attendee = authService.getUserByUsername(username);
                 return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
                     "token", token,
                     "user", Map.of(
-                        "id", user.getId(),
-                        "username", user.getUsername(),
-                        "email", user.getEmail(),
-                        "fullName", user.getFullName() != null ? user.getFullName() : "",
-                        "role", user.getRole().toString(),
-                        "verified", user.isVerified()
+                        "id", attendee.getId(),
+                        "username", attendee.getUsername(),
+                        "email", attendee.getEmail(),
+                        "fullName", attendee.getFullName() != null ? attendee.getFullName() : "",
+                        "role", attendee.getRole().toString(),
+                        "verified", attendee.isVerified()
                     )
                 ));
             } else {
@@ -91,15 +89,15 @@ public class AuthController {
             
             System.out.println("Registration attempt for username: " + username + ", email: " + email + ", role: " + role);
             
-            User user = authService.register(username, email, password, fullName, role);
+            com.openEvent.event_service.Entities.Attendee attendee = authService.register(username, email, password, fullName, role);
             return ResponseEntity.ok(Map.of(
                 "message", "User registered successfully!",
-                "id", user.getId(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "fullName", user.getFullName() != null ? user.getFullName() : "",
-                "role", user.getRole().toString(),
-                "verified", user.isVerified()
+                "id", attendee.getId(),
+                "username", attendee.getUsername(),
+                "email", attendee.getEmail(),
+                "fullName", attendee.getFullName() != null ? attendee.getFullName() : "",
+                "role", attendee.getRole().toString(),
+                "verified", attendee.isVerified()
                 // NOTE: Never include password in response for security reasons
             ));
         } catch (Exception e) {

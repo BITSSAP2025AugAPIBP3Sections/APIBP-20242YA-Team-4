@@ -1,12 +1,9 @@
 package com.openEvent.event_service.Controllers;
 
-import com.openEvent.event_service.Entities.User;
-import com.openEvent.event_service.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,19 +17,19 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/users")
 @CrossOrigin(origins = "*")
-public class UserController {
+public class AttendeeController {
 
     @Autowired
-    private UserService userService;
+    private com.openEvent.event_service.Services.AttendeeService attendeeService;
 
     @GetMapping
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
     })
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<com.openEvent.event_service.Entities.Attendee>> getAllUsers() {
         try {
-            List<User> users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
+            List<com.openEvent.event_service.Entities.Attendee> attendees = attendeeService.getAllUsers();
+            return ResponseEntity.ok(attendees);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -41,12 +38,12 @@ public class UserController {
     @GetMapping("/{id}")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "User retrieved successfully",
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.openEvent.event_service.Entities.Attendee.class))),
         @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
-            Optional<User> user = userService.getUserById(id);
+            Optional<com.openEvent.event_service.Entities.Attendee> user = attendeeService.getUserById(id);
             if (user.isPresent()) {
                 return ResponseEntity.ok(user.get());
             } else {
@@ -62,9 +59,9 @@ public class UserController {
     @GetMapping("/username/{username}")
     public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
         try {
-            User user = userService.getUserByUsername(username);
-            if (user != null) {
-                return ResponseEntity.ok(user);
+            com.openEvent.event_service.Entities.Attendee attendee = attendeeService.getUserByUsername(username);
+            if (attendee != null) {
+                return ResponseEntity.ok(attendee);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "User not found"));
@@ -92,10 +89,10 @@ public class UserController {
             String fullName = updateRequest.get("fullName");
             String email = updateRequest.get("email");
             
-            User updatedUser = userService.updateUserProfile(id, fullName, email);
+            com.openEvent.event_service.Entities.Attendee updatedAttendee = attendeeService.updateUserProfile(id, fullName, email);
             return ResponseEntity.ok(Map.of(
                 "message", "Profile updated successfully",
-                "user", updatedUser
+                "user", updatedAttendee
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -120,7 +117,7 @@ public class UserController {
             String currentPassword = passwordRequest.get("currentPassword");
             String newPassword = passwordRequest.get("newPassword");
             
-            boolean success = userService.changePassword(id, currentPassword, newPassword);
+            boolean success = attendeeService.changePassword(id, currentPassword, newPassword);
             if (success) {
                 return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
             } else {
@@ -136,7 +133,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
-            userService.deleteUser(id);
+            attendeeService.deleteUser(id);
             return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
