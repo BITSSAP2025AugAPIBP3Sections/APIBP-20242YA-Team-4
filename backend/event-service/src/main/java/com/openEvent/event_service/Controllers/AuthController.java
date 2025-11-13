@@ -1,4 +1,4 @@
-package src.main.java.com.openEvent.event_service.Controllers;
+package com.openEvent.event_service.Controllers;
 
 import com.openEvent.event_service.Services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
