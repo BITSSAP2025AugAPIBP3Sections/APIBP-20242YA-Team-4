@@ -20,7 +20,7 @@ public class EventGraphqlController {
 
     @QueryMapping
     public List<Event> events() {
-        return eventService.getAllEvents();
+        return eventService.getAllEvents(false);
     }
 
     @QueryMapping
