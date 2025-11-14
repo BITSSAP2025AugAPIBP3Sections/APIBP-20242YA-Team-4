@@ -1,6 +1,7 @@
 package com.openEvent.event_service.Services;
 
 import com.openEvent.event_service.Entities.Payment;
+import com.openEvent.event_service.Repositories.EventRepositoryInterface;
 import com.openEvent.event_service.Repositories.PaymentRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,13 +18,50 @@ public class PaymentService {
     @Autowired
     private PaymentRepositoryInterface paymentRepository;
 
+    @Autowired
+    private EventRepositoryInterface eventRepositoryInterface;
+
     public Payment initiatePayment(Long userId, Long eventId, BigDecimal amount, String paymentMethod) {
+        // Check if event exists
+        boolean eventExists = eventRepositoryInterface.existsById(eventId);
+        if (!eventExists) {
+            throw new RuntimeException("Event not found with id: " + eventId);
+        }
+
         Payment payment = new Payment(userId, eventId, amount, paymentMethod);
         payment.setTransactionId(generateTransactionId());
-        
-        // Simulate payment processing logic here
-        // In a real implementation, you would integrate with a payment gateway
-        
+        // Initial status is PENDING (assuming your Payment constructor sets it)
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * Process a payment for the given paymentId.
+     * Simulates success or failure depending on conditions (e.g., paymentMethod, amount).
+     */
+    public Payment processPayment(Long paymentId) {
+        Optional<Payment> optional = paymentRepository.findById(paymentId);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("Payment not found with id: " + paymentId);
+        }
+
+        Payment payment = optional.get();
+
+
+        if ("FAIL_CARD".equalsIgnoreCase(payment.getPaymentMethod())
+                || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            payment.setStatus(Payment.PaymentStatus.FAILED);
+            payment.setFailureReason("Simulated payment failure because method is invalid or amount <= 0");
+        } else {
+            double random = Math.random();
+            if (random < 0.05) {
+                payment.setStatus(Payment.PaymentStatus.FAILED);
+                payment.setFailureReason("Random network error");
+            } else {
+                payment.setStatus(Payment.PaymentStatus.SUCCESS);
+            }
+        }
+
+        payment.setUpdatedAt(LocalDateTime.now());
         return paymentRepository.save(payment);
     }
 
@@ -40,45 +78,39 @@ public class PaymentService {
     }
 
     public Payment updatePaymentStatus(Long paymentId, Payment.PaymentStatus status, String failureReason) {
-        Optional<Payment> paymentOptional = paymentRepository.findById(paymentId);
-        if (paymentOptional.isPresent()) {
-            Payment payment = paymentOptional.get();
-            payment.setStatus(status);
-            payment.setUpdatedAt(LocalDateTime.now());
-            
-            if (status == Payment.PaymentStatus.FAILED && failureReason != null) {
-                payment.setFailureReason(failureReason);
-            }
-            
-            return paymentRepository.save(payment);
+        Optional<Payment> optional = paymentRepository.findById(paymentId);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("Payment not found with id: " + paymentId);
         }
-        throw new RuntimeException("Payment not found with id: " + paymentId);
+        Payment payment = optional.get();
+        payment.setStatus(status);
+        payment.setUpdatedAt(LocalDateTime.now());
+        if (status == Payment.PaymentStatus.FAILED && failureReason != null) {
+            payment.setFailureReason(failureReason);
+        }
+        return paymentRepository.save(payment);
     }
 
     public Payment processRefund(Long paymentId) {
-        Optional<Payment> paymentOptional = paymentRepository.findById(paymentId);
-        if (paymentOptional.isPresent()) {
-            Payment payment = paymentOptional.get();
-            
-            if (payment.getStatus() != Payment.PaymentStatus.SUCCESS) {
-                throw new RuntimeException("Cannot refund payment that is not successful");
-            }
-            
-            // Simulate refund processing logic
-            payment.setStatus(Payment.PaymentStatus.REFUNDED);
-            payment.setUpdatedAt(LocalDateTime.now());
-            
-            return paymentRepository.save(payment);
+        Optional<Payment> optional = paymentRepository.findById(paymentId);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("Payment not found with id: " + paymentId);
         }
-        throw new RuntimeException("Payment not found with id: " + paymentId);
+        Payment payment = optional.get();
+        if (payment.getStatus() != Payment.PaymentStatus.SUCCESS) {
+            throw new RuntimeException("Cannot refund payment that is not successful");
+        }
+        payment.setStatus(Payment.PaymentStatus.REFUNDED);
+        payment.setUpdatedAt(LocalDateTime.now());
+        return paymentRepository.save(payment);
     }
 
     public Payment.PaymentStatus getPaymentStatus(Long paymentId) {
-        Optional<Payment> paymentOptional = paymentRepository.findById(paymentId);
-        if (paymentOptional.isPresent()) {
-            return paymentOptional.get().getStatus();
+        Optional<Payment> optional = paymentRepository.findById(paymentId);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("Payment not found with id: " + paymentId);
         }
-        throw new RuntimeException("Payment not found with id: " + paymentId);
+        return optional.get().getStatus();
     }
 
     public List<Payment> getAllPayments() {
