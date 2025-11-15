@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class Attendee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +17,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private com.openEvent.event_service.Entities.Role role;
 
     private boolean verified;
 
@@ -26,14 +26,14 @@ public class User {
     private LocalDateTime updatedAt;
 
     // Constructors
-    public User() {
+    public Attendee() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.verified = false;
         this.role = Role.ATTENDEE; // Default role
     }
 
-    public User(String username, String email, String password) {
+    public Attendee(String username, String email, String password) {
         this();
         this.username = username;
         this.email = email;
@@ -82,7 +82,7 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Role getRole() {
+    public com.openEvent.event_service.Entities.Role getRole() {
         return role;
     }
 
