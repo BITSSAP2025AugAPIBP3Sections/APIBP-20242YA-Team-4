@@ -10,7 +10,6 @@ import java.util.List;
 @Service
 public class NotificationService {
 
-    @Autowired
     private final NotificationRepositoryInterface notificationRepository;
 
     @Autowired
@@ -43,5 +42,16 @@ public class NotificationService {
     public void deleteNotification(Long id) {
         Notification existing = getNotificationById(id);
         notificationRepository.delete(existing);
+    }
+
+    // New helper method for saga usage
+    public Notification sendBookingNotification(Long userId, String title, String message) {
+        String recipient = "user:" + userId; 
+        Notification n = new Notification();
+        n.setTitle(title);
+        n.setMessage(message);
+        n.setRecipient(recipient);
+        // The sentAt will be set by @CreationTimestamp, here this is gonna be setup
+        return notificationRepository.save(n);
     }
 }
