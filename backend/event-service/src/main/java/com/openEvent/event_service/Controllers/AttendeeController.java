@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/attendees")
 @CrossOrigin(origins = "*")
 public class AttendeeController {
 
@@ -24,11 +24,11 @@ public class AttendeeController {
 
     @GetMapping
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Attendees retrieved successfully")
     })
-    public ResponseEntity<List<com.openEvent.event_service.Entities.Attendee>> getAllUsers() {
+    public ResponseEntity<List<com.openEvent.event_service.Entities.Attendee>> getAllAttendees() {
         try {
-            List<com.openEvent.event_service.Entities.Attendee> attendees = attendeeService.getAllUsers();
+            List<com.openEvent.event_service.Entities.Attendee> attendees = attendeeService.getAllAttendees();
             return ResponseEntity.ok(attendees);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -37,62 +37,62 @@ public class AttendeeController {
 
     @GetMapping("/{id}")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User retrieved successfully",
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.openEvent.event_service.Entities.Attendee.class))),
-        @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "200", description = "Attendee retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.openEvent.event_service.Entities.Attendee.class))),
+            @ApiResponse(responseCode = "404", description = "Attendee not found")
     })
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getAttendeeById(@PathVariable Long id) {
         try {
-            Optional<com.openEvent.event_service.Entities.Attendee> user = attendeeService.getUserById(id);
-            if (user.isPresent()) {
-                return ResponseEntity.ok(user.get());
+            Optional<com.openEvent.event_service.Entities.Attendee> attendee = attendeeService.getAttendeeById(id);
+            if (attendee.isPresent()) {
+                return ResponseEntity.ok(attendee.get());
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "User not found"));
+                        .body(Map.of("error", "Attendee not found"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to fetch user: " + e.getMessage()));
+                    .body(Map.of("error", "Failed to fetch Attendee: " + e.getMessage()));
         }
     }
 
     @GetMapping("/username/{username}")
-    public ResponseEntity<?> getUserByUsername(@PathVariable String username) {
+    public ResponseEntity<?> getAttendeeByUsername(@PathVariable String username) {
         try {
-            com.openEvent.event_service.Entities.Attendee attendee = attendeeService.getUserByUsername(username);
+            com.openEvent.event_service.Entities.Attendee attendee = attendeeService.getAttendeeByUsername(username);
             if (attendee != null) {
                 return ResponseEntity.ok(attendee);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "User not found"));
+                        .body(Map.of("error", "Attendee not found"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to fetch user: " + e.getMessage()));
+                    .body(Map.of("error", "Failed to fetch Attendee: " + e.getMessage()));
         }
     }
 
     @PutMapping("/{id}/profile")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                value = "{\n" +
-                       "  \"fullName\": \"Updated Name\",\n" +
-                       "  \"email\": \"newemail@example.com\"\n" +
-                       "}"
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = @ExampleObject(
+                            value = "{\n" +
+                                    "  \"fullName\": \"Updated Name\",\n" +
+                                    "  \"email\": \"newemail@example.com\"\n" +
+                                    "}"
+                    )
             )
-        )
     )
-    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody Map<String, String> updateRequest) {
+    public ResponseEntity<?> updateAttendeeProfile(@PathVariable Long id, @RequestBody Map<String, String> updateRequest) {
         try {
             String fullName = updateRequest.get("fullName");
             String email = updateRequest.get("email");
-            
-            com.openEvent.event_service.Entities.Attendee updatedAttendee = attendeeService.updateUserProfile(id, fullName, email);
+
+            com.openEvent.event_service.Entities.Attendee updatedAttendee = attendeeService.updateAttendeeProfile(id, fullName, email);
             return ResponseEntity.ok(Map.of(
-                "message", "Profile updated successfully",
-                "user", updatedAttendee
+                    "message", "Profile updated successfully",
+                    "attendee", updatedAttendee
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -102,22 +102,22 @@ public class AttendeeController {
 
     @PutMapping("/{id}/password")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        content = @Content(
-            mediaType = "application/json",
-            examples = @ExampleObject(
-                value = "{\n" +
-                       "  \"currentPassword\": \"oldpassword\",\n" +
-                       "  \"newPassword\": \"newpassword123\"\n" +
-                       "}"
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = @ExampleObject(
+                            value = "{\n" +
+                                    "  \"currentPassword\": \"oldpassword\",\n" +
+                                    "  \"newPassword\": \"newpassword123\"\n" +
+                                    "}"
+                    )
             )
-        )
     )
-    public ResponseEntity<?> changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordRequest) {
+    public ResponseEntity<?> changeAttendeePassword(@PathVariable Long id, @RequestBody Map<String, String> passwordRequest) {
         try {
             String currentPassword = passwordRequest.get("currentPassword");
             String newPassword = passwordRequest.get("newPassword");
-            
-            boolean success = attendeeService.changePassword(id, currentPassword, newPassword);
+
+            boolean success = attendeeService.changeAttendeePassword(id, currentPassword, newPassword);
             if (success) {
                 return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
             } else {
@@ -131,14 +131,13 @@ public class AttendeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteAttendee(@PathVariable Long id) {
         try {
-            attendeeService.deleteUser(id);
-            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+            attendeeService.deleteAttendee(id);
+            return ResponseEntity.ok(Map.of("message", "Attendee deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Failed to delete user: " + e.getMessage()));
+                    .body(Map.of("error", "Failed to delete Attendee: " + e.getMessage()));
         }
     }
 }
-

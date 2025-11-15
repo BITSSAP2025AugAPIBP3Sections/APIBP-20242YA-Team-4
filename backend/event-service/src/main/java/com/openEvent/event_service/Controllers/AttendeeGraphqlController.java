@@ -15,22 +15,22 @@ public class AttendeeGraphqlController {
     private com.openEvent.event_service.Services.AttendeeService attendeeService;
 
     @QueryMapping
-    public List<com.openEvent.event_service.Entities.Attendee> getAllUsers() {
-        return attendeeService.getAllUsers();
+    public List<com.openEvent.event_service.Entities.Attendee> getAllAttendees() {
+        return attendeeService.getAllAttendees();
     }
 
     @QueryMapping
-    public Optional<com.openEvent.event_service.Entities.Attendee> getUserById(@Argument Long id) {
-        return attendeeService.getUserById(id);
+    public Optional<com.openEvent.event_service.Entities.Attendee> getAttendeeById(@Argument Long id) {
+        return attendeeService.getAttendeeById(id);
     }
 
     @QueryMapping
-    public com.openEvent.event_service.Entities.Attendee getUserByUsername(@Argument String username) {
-        return attendeeService.getUserByUsername(username);
+    public com.openEvent.event_service.Entities.Attendee getAttendeeByUsername(@Argument String username) {
+        return attendeeService.getAttendeeByUsername(username);
     }
 
     @QueryMapping
-    public Optional<com.openEvent.event_service.Entities.Attendee> getUserByEmail(@Argument String email) {
-        return attendeeService.getUserByEmail(email);
+    public Optional<com.openEvent.event_service.Entities.Attendee> getAttendeeByEmail(@Argument String email) {
+        return attendeeService.getAttendeeByEmail(email);
     }
 }
