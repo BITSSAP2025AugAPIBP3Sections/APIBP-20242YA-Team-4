@@ -86,12 +86,24 @@ public class AuthController {
             String password = registerRequest.get("password");
             String fullName = registerRequest.get("fullName");
             String role = registerRequest.getOrDefault("role", "ATTENDEE"); // Default to ATTENDEE
-            
+
+            // Email validation
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Email is required"));
+            }
+            // Only allow emails in the format something@gmail.com
+            String gmailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
+            if (!email.matches(gmailRegex)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Email must be a valid Gmail address (name@gmail.com)"));
+            }
+
             System.out.println("Registration attempt for username: " + username + ", email: " + email + ", role: " + role);
-            
+
             com.openEvent.event_service.Entities.Attendee attendee = authService.register(username, email, password, fullName, role);
             return ResponseEntity.ok(Map.of(
-                "message", "User registered successfully!",
+                "message", "Attendee registered successfully!",
                 "id", attendee.getId(),
                 "username", attendee.getUsername(),
                 "email", attendee.getEmail(),
