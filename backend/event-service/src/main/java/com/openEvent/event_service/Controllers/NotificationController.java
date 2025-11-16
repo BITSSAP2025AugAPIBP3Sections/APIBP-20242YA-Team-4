@@ -1,14 +1,11 @@
 package com.openEvent.event_service.Controllers;
 
 import com.openEvent.event_service.Entities.Notification;
-import com.openEvent.event_service.Exceptions.NotificationNotFoundException;
 import com.openEvent.event_service.Services.NotificationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,55 +30,56 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getAllNotifications() {
-        return ResponseEntity.ok(notificationService.getAllNotifications());
+    public ResponseEntity<?> getAllNotifications() {
+        try {
+            List<Notification> notifications = notificationService.getAllNotifications();
+            return ResponseEntity.ok(notifications);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Notification> createNotification(@RequestBody Notification notification) {
-        Notification created = notificationService.createNotification(notification);
-        return ResponseEntity.status(201).body(created);
+    public ResponseEntity<?> createNotification(@RequestBody Notification notification) {
+        try {
+            Notification created = notificationService.createNotification(notification);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Notification> getNotificationById(@PathVariable Long id) {
-        Notification notification = notificationService.getNotificationById(id);
-        return ResponseEntity.ok(notification);
+    public ResponseEntity<?> getNotificationById(@PathVariable Long id) {
+        try {
+            Notification notification = notificationService.getNotificationById(id);
+            return ResponseEntity.ok(notification);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Notification> updateNotification(@PathVariable Long id, @RequestBody Notification notificationDetails) {
-        Notification updated = notificationService.updateNotification(id, notificationDetails);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<?> updateNotification(@PathVariable Long id, @RequestBody Notification notificationDetails) {
+        try {
+            Notification updated = notificationService.updateNotification(id, notificationDetails);
+            return ResponseEntity.ok(updated);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
-        notificationService.deleteNotification(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
+        try {
+            notificationService.deleteNotification(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
-    // Exception handler for NotificationNotFoundException
-    @ExceptionHandler(NotificationNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotificationNotFoundException(NotificationNotFoundException ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    // Exception handler for validation errors
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-
-    // Generic exception handler
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+    private ResponseEntity<Map<String, String>> handleException(Exception ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", "An unexpected error occurred");
         errorResponse.put("details", ex.getMessage());
