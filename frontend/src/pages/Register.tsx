@@ -6,40 +6,46 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [password, setPassword] = useState("");
   const [reEnterPassword, setReEnterPassword] = useState("");
-  const [role, setRole] = useState("attendee");
+  const [role, setRole] = useState(user?.role || "attendee");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-     if (password !== reEnterPassword) {
-            toast.error("Passwords do not match!");
-            return;
-          }
+
+    if (password !== reEnterPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
     setIsLoading(true);
 
-    // TODO: Implement actual update logic
-   setTimeout(() => {
-         toast.success("Sign-up successful!");
-         setIsLoading(false);
+    // TODO: Implement actual update logic (API call)
+    setTimeout(() => {
+      toast.success("Profile updated successfully!");
+      setIsLoading(false);
 
-         if (role === "organizer") {
-           navigate("/event-organizer");
-         }
-       }, 1000);
-     };
+      if (role === "organizer") {
+        navigate("/event-organizer");
+      }
+    }, 1000);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">My Profile</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* User Info Card */}
         <Card className="p-6 lg:col-span-1">
           <div className="text-center">
             <div className="w-24 h-24 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4">
@@ -53,10 +59,12 @@ const Profile = () => {
           </div>
         </Card>
 
+        {/* Profile Update Form */}
         <Card className="p-6 lg:col-span-2">
           <h2 className="text-2xl font-bold mb-6">Account Information</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -68,6 +76,7 @@ const Profile = () => {
               />
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -78,35 +87,36 @@ const Profile = () => {
                 required
               />
             </div>
-            <div className="space-y-2"
-            onClick={(e) => e.stopPropagation()}>
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-             </div>
-              <div className="space-y-2"
-              onClick={(e) => e.stopPropagation()}>
-                         <Label htmlFor="reEnterPassword">Re-enter Password</Label>
-                         <Input
-                           id="reEnterPassword"
-                           type="password"
-                           value={reEnterPassword}
-                           onChange={(e) => setReEnterPassword(e.target.value)}
-                           required
-                         />
-               </div>
 
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            {/* Re-enter Password */}
+            <div className="space-y-2">
+              <Label htmlFor="reEnterPassword">Re-enter Password</Label>
+              <Input
+                id="reEnterPassword"
+                type="password"
+                value={reEnterPassword}
+                onChange={(e) => setReEnterPassword(e.target.value)}
+              />
+            </div>
+
+            {/* Account Type */}
             <div className="space-y-2">
               <Label htmlFor="role">Account Type</Label>
               <select
                 id="role"
-                value={user?.role}
-                onChange={(e) => console.log(e.target.value)} // Replace with your handler
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
                 className="bg-muted block w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="organizer">Event Organizer</option>
@@ -114,12 +124,13 @@ const Profile = () => {
               </select>
             </div>
 
+            {/* Submit Button */}
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary-hover"
               disabled={isLoading}
             >
-              {isLoading ? "Updating..." : "Sign Up"}
+              {isLoading ? "Updating..." : "Update Profile"}
             </Button>
           </form>
         </Card>

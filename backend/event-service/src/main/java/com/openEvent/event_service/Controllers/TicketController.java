@@ -3,11 +3,15 @@ package com.openEvent.event_service.Controllers;
 import com.openEvent.event_service.Entities.Ticket;
 import com.openEvent.event_service.Services.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Ticket Controller", description = "Handles ticket booking, retrieval, and cancellation")
 @RestController
