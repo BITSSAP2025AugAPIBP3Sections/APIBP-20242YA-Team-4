@@ -9,11 +9,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Tag(name = "Attendee Controller", description = "Handles attendee profile operations")
 @RestController
 @RequestMapping("/api/v1/attendees")
 @CrossOrigin(origins = "*")

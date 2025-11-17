@@ -7,9 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.Map;
 
+@Tag(name = "Authentication Controller", description = "Handles user login and registration")
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
@@ -19,6 +22,7 @@ public class AuthController {
     private AuthenticationService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "User Login", description = "Authenticates user and returns a JWT token with user details.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
         content = @Content(
             mediaType = "application/json",
@@ -65,6 +69,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
+    @Operation(summary = "User Registration", description = "Registers a new user and returns user details.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
         content = @Content(
             mediaType = "application/json",

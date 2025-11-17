@@ -4,9 +4,11 @@ import com.openEvent.event_service.Entities.Ticket;
 import com.openEvent.event_service.Services.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+@Tag(name = "Ticket Controller", description = "Handles ticket booking, retrieval, and cancellation")
 @RestController
 @RequestMapping("/api/v1/tickets")
 public class TicketController {
