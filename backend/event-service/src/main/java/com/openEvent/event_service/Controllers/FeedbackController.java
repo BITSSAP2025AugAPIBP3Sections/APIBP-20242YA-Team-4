@@ -27,6 +27,7 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     @PostMapping
+    @Operation(summary = "Submit feedback", description = "Submit feedback for an event by a user.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Feedback submitted successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Feedback.class))),
@@ -61,6 +62,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get feedback by ID", description = "Retrieve feedback by its unique ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Feedback retrieved successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Feedback.class))),
@@ -82,6 +84,7 @@ public class FeedbackController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update feedback", description = "Update feedback for an event by a user.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Feedback updated successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Feedback.class))),
@@ -117,6 +120,7 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete feedback", description = "Delete feedback by its unique ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Feedback deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Feedback not found")
