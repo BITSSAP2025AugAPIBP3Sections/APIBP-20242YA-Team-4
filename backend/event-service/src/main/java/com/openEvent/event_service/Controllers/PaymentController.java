@@ -2,6 +2,7 @@ package com.openEvent.event_service.Controllers;
 
 import com.openEvent.event_service.Entities.Payment;
 import com.openEvent.event_service.Services.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

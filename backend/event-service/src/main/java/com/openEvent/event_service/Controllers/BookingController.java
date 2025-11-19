@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/api/v1/bookings")
@@ -19,6 +20,7 @@ public class BookingController {
     private BookingSagaService bookingSagaService;
 
     @PostMapping
+    @Operation(summary = "Book ticket", description = "Book a ticket for an event using the booking saga pattern. Returns booking result with status and details.")
     public ResponseEntity<BookingResult> bookTicket(@RequestBody BookingRequest request) {
         BookingResult result = bookingSagaService.bookTicket(
                 request.getUserId(),
