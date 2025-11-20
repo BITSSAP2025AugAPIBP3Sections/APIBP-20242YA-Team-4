@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { notificationAPI } from '@/lib/api-service';
 
 interface Notification {
   id: string;
@@ -21,25 +23,54 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user } = useAuth();
+  const deletedIdsRef = useRef<Set<string>>(new Set());
 
-  // Simulate real-time notifications
+  // Fetch real notifications from backend
   useEffect(() => {
-    const interval = setInterval(() => {
-      const messages = [
-        { type: 'info' as const, message: 'New event added: Tech Summit 2024' },
-        { type: 'success' as const, message: 'Your ticket booking is confirmed!' },
-        { type: 'warning' as const, message: 'Event starting in 1 hour' },
-      ];
-      
-      const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-      
-      if (Math.random() > 0.7) { // 30% chance of notification
-        addNotification(randomMessage);
-      }
-    }, 15000); // Check every 15 seconds
+    if (!user) return;
 
+    const fetchNotifications = async () => {
+      try {
+        const data = await notificationAPI.getAllNotifications();
+        
+        // Filter notifications for current user and exclude deleted ones
+        const userNotifications = data.filter((n: any) => {
+          const id = n.id.toString();
+          // Skip if deleted
+          if (deletedIdsRef.current.has(id)) return false;
+          // Show all broadcasts (recipient: "all")
+          if (n.recipient === 'all') return true;
+          // Show user-specific notifications (recipient: "user:{id}")
+          if (n.recipient === `user:${user.id}`) return true;
+          return false;
+        });
+        
+        // Transform backend notifications to frontend format
+        const transformed = userNotifications.map((n: any) => {
+          const id = n.id.toString();
+          // Check if this notification exists in current state to preserve read status
+          const existingNotif = notifications.find(existing => existing.id === id);
+          
+          return {
+            id: id,
+            type: n.title.includes('Payment') ? 'success' as const : 'info' as const,
+            message: n.message,
+            timestamp: new Date(n.sentAt),
+            read: existingNotif ? existingNotif.read : false, // Preserve read status
+          };
+        });
+        
+        setNotifications(transformed);
+      } catch (error) {
+        console.error('❌ Failed to fetch notifications:', error);
+      }
+    };
+    
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [user]); // Only user dependency
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
@@ -62,6 +93,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const clearNotification = (id: string) => {
+    // Add to deleted IDs to prevent from showing again
+    deletedIdsRef.current.add(id);
+    // Remove from current list
     setNotifications(prev => prev.filter(notif => notif.id !== id));
   };
 

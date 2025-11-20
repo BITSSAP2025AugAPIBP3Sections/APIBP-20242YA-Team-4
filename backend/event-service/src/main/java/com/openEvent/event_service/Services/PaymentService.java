@@ -4,11 +4,14 @@ import com.openEvent.event_service.Entities.Payment;
 import com.openEvent.event_service.Repositories.EventRepositoryInterface;
 import com.openEvent.event_service.Repositories.PaymentRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +23,9 @@ public class PaymentService {
 
     @Autowired
     private EventRepositoryInterface eventRepositoryInterface;
+    
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     public Payment initiatePayment(Long userId, Long eventId, BigDecimal amount, String paymentMethod) {
         // Check if event exists
@@ -30,8 +36,23 @@ public class PaymentService {
 
         Payment payment = new Payment(userId, eventId, amount, paymentMethod);
         payment.setTransactionId(generateTransactionId());
-        // Initial status is PENDING (assuming your Payment constructor sets it)
-        return paymentRepository.save(payment);
+        payment.setStatus(Payment.PaymentStatus.SUCCESS); // Auto-approve for demo
+        Payment saved = paymentRepository.save(payment);
+        
+        // Send Kafka notification for successful payment
+        try {
+            Map<String, Object> notification = new HashMap<>();
+            notification.put("userId", userId);
+            notification.put("eventId", eventId);
+            notification.put("message", "Payment successful!");
+            notification.put("type", "success");
+            
+            kafkaTemplate.send("payment-notifications", notification);
+        } catch (Exception e) {
+            // Kafka send failed - log or handle silently
+        }
+        
+        return saved;
     }
 
     /**

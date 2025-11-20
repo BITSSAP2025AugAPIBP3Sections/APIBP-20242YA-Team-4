@@ -1,19 +1,23 @@
+import { authAPI } from "@/lib/api-service";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface User {
   id: string;
-  name: string;
+  username: string;
+  fullName: string;
   email: string;
-  role: "user" | "organizer";
+  role: "ATTENDEE" | "ORGANIZER";
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, role: "user" | "organizer") => Promise<void>;
+  register: (fullName: string, username: string, email: string, password: string, role: "ATTENDEE" | "ORGANIZER") => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -21,52 +25,94 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for stored user data on mount
+  // 🔹 Refresh user data from backend
+  const refreshUser = async () => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    const parsed = JSON.parse(stored);
+
+    try {
+      const updated = await authAPI.getUserById(parsed.id);
+
+      // Map backend → frontend shape
+      const safeUser = {
+        id: updated.id,
+        username: updated.username,
+        fullName: updated.fullName,
+        email: updated.email,
+        role: updated.role,
+      };
+
+      localStorage.setItem("user", JSON.stringify(safeUser));
+      setUser(safeUser);
+    } catch (e) {
+      console.error("Failed to refresh user", e);
+    }
+  };
+
+  // 🔹 Fetch user from backend by ID
+  const fetchUserProfile = async () => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    if (!storedUser) return;
+
+    const parsed = JSON.parse(storedUser);
+
+    try {
+      const freshUser = await authAPI.getUserById(parsed.id);
+      setUser(freshUser);
+      localStorage.setItem("user", JSON.stringify(freshUser));
+    } catch (err) {
+      console.error("❌ Failed to refresh user:", err);
+    }
+  };
+
+  // 🔹 On first load: check localStorage and fetch fresh data
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      setUser(JSON.parse(stored));
+      refreshUser();
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // TODO: Replace with actual API call
-    // Simulated login
-    const mockUser: User = {
-      id: "1",
-      name: "John Doe",
-      email,
-      role: "user",
-    };
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
+  // 🔹 LOGIN
+  const login = async (username: string, password: string) => {
+    const response = await authAPI.login({ username, password });
+
+    const { user, token } = response;
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    setUser(user);
+
+    // Fetch updated user data if needed
+    await fetchUserProfile();
   };
 
+  // 🔹 REGISTER
   const register = async (
-    name: string,
-    email: string,
-    password: string,
-    role: "user" | "organizer"
-  ) => {
-    // TODO: Replace with actual API call
-    const mockUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role,
-    };
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
-  };
+  fullName: string,
+  username: string,
+  email: string,
+  password: string,
+  role: "ATTENDEE" | "ORGANIZER"
+) => {
+  await authAPI.register({ username, email, password, fullName, role });
+};
 
+
+  // 🔹 LOGOUT
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -74,8 +120,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 };

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
+import UpdateEvent from "./pages/UpdateEvent";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -42,6 +43,7 @@ const App = () => (
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/payment" element={<PaymentPage />} />
                   <Route path="/create-event" element={<CreateEvent />} />
+                  <Route path="/update-event/:id" element={<UpdateEvent />} />
                   <Route path="/feedback" element={<FeedbackPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

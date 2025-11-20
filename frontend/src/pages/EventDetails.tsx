@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Calendar, MapPin, Users, ArrowLeft, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -5,36 +6,62 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { eventAPI } from "@/lib/api-service";
 
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [event, setEvent] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock event data - in real app, fetch from API
-  const event = {
-    id: id,
-    title: "Summer Music Festival 2025",
-    description: "Join us for an unforgettable night of live music with top artists from around the world. Experience multiple stages, food vendors, and an amazing atmosphere that will create memories to last a lifetime.",
-    fullDescription: `
-      Get ready for the most spectacular music festival of the summer! Our lineup features:
+  // Fetch event details from backend
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      if (!id) return;
       
-      • 20+ world-class artists across 3 stages
-      • Gourmet food trucks and beverage stations
-      • VIP lounge areas with premium amenities
-      • Interactive art installations
-      • Safe and secure environment with professional staff
-      
-      Don't miss this incredible opportunity to be part of something special. Tickets are selling fast!
-    `,
-    date: "2025-07-15",
-    location: "Central Park, New York",
-    category: "festival",
-    price: 49.99,
-    availableTickets: 500,
-    totalTickets: 1000,
-    organizer: "Event Masters Inc.",
-  };
+      try {
+        console.log('🔍 Fetching event details for ID:', id);
+        const eventData = await eventAPI.getEventById(id);
+        console.log('✅ Fetched event:', eventData);
+        console.log('💰 Price from backend:', eventData.price);
+        console.log('👥 Capacity from backend:', eventData.capacity);
+        console.log('📅 Event date from backend:', eventData.eventDate);
+        setEvent(eventData);
+      } catch (error) {
+        console.error('❌ Failed to fetch event:', error);
+        toast.error("Failed to load event details");
+        navigate('/events');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEventDetails();
+  }, [id, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-lg text-muted-foreground">Loading event details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-lg text-muted-foreground">Event not found</p>
+          <Button onClick={() => navigate('/events')} className="mt-4">
+            Back to Events
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const handleBookTicket = () => {
     if (!user) {
@@ -44,6 +71,25 @@ const EventDetails = () => {
     }
     toast.success("Redirecting to payment...");
     navigate(`/payment?eventId=${event.id}&eventName=${encodeURIComponent(event.title)}&price=${event.price}`);
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!window.confirm(`Are you sure you want to delete "${event.title}"?`)) {
+      return;
+    }
+
+    try {
+      await eventAPI.deleteEvent(event.id);
+      toast.success("Event deleted successfully!");
+      navigate('/events');
+    } catch (error) {
+      console.error("❌ Delete event error:", error);
+      toast.error("Failed to delete event");
+    }
+  };
+
+  const handleUpdateEvent = () => {
+    navigate(`/update-event/${event.id}`);
   };
 
   const getCategoryColor = (cat: string) => {
@@ -75,8 +121,8 @@ const EventDetails = () => {
             <div className="w-full h-full flex items-center justify-center">
               <Calendar className="h-32 w-32 text-white/50" />
             </div>
-            <Badge className={`absolute top-4 right-4 ${getCategoryColor(event.category)}`}>
-              {event.category}
+            <Badge className={`absolute top-4 right-4 ${getCategoryColor(event.category || 'workshop')}`}>
+              {event.category || 'Event'}
             </Badge>
           </div>
 
@@ -86,7 +132,7 @@ const EventDetails = () => {
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
               <span className="font-medium">
-                {new Date(event.date).toLocaleDateString("en-US", {
+                {new Date(event.eventDate || event.date).toLocaleDateString("en-US", {
                   weekday: "long",
                   year: "numeric",
                   month: "long",
@@ -98,20 +144,19 @@ const EventDetails = () => {
               <MapPin className="h-5 w-5 text-primary" />
               <span className="font-medium">{event.location}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              <span className="font-medium">
-                {event.availableTickets} / {event.totalTickets} tickets available
-              </span>
-            </div>
+            {event.capacity && (
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                <span className="font-medium">
+                  Capacity: {event.capacity} people
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="prose prose-lg max-w-none">
             <h2 className="text-2xl font-bold mb-4">About This Event</h2>
-            <p className="text-muted-foreground mb-4">{event.description}</p>
-            <pre className="whitespace-pre-wrap text-muted-foreground font-sans">
-              {event.fullDescription}
-            </pre>
+            <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
           </div>
         </div>
 
@@ -120,47 +165,50 @@ const EventDetails = () => {
           <Card className="p-6 sticky top-20 shadow-lg">
             <div className="mb-6">
               <p className="text-sm text-muted-foreground mb-1">Starting from</p>
-              <p className="text-4xl font-bold text-primary">${event.price}</p>
+              <p className="text-4xl font-bold text-primary">
+                ${typeof event.price === 'number' ? event.price.toFixed(2) : (event.price || 0)}
+              </p>
               <p className="text-sm text-muted-foreground">per ticket</p>
             </div>
 
-            <div className="space-y-4 mb-6">
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium mb-1">Availability</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-background rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-success h-full transition-all"
-                      style={{
-                        width: `${(event.availableTickets / event.totalTickets) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium">
-                    {Math.round((event.availableTickets / event.totalTickets) * 100)}%
-                  </span>
+            {event.capacity && (
+              <div className="space-y-4 mb-6">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium mb-1">Event Capacity</p>
+                  <p className="text-lg font-semibold">{event.capacity} people</p>
                 </div>
               </div>
+            )}
 
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium mb-1">Organized by</p>
-                <p className="text-sm text-muted-foreground">{event.organizer}</p>
+            {/* Book Tickets - Only for Attendees */}
+            {user && user.role !== 'ORGANIZER' && (
+              <Button
+                onClick={handleBookTicket}
+                className="w-full bg-primary hover:bg-primary-hover h-12 text-base font-semibold mb-4"
+              >
+                <Ticket className="mr-2 h-5 w-5" />
+                Book Tickets Now
+              </Button>
+            )}
+
+            {/* Organizer Actions */}
+            {user && user.role === 'ORGANIZER' && (
+              <div className="space-y-3 pt-4 border-t">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Organizer Actions</p>
+                <Button
+                  onClick={handleUpdateEvent}
+                  className="w-full bg-primary hover:bg-primary-hover"
+                >
+                  Update Event
+                </Button>
+                <Button
+                  onClick={handleDeleteEvent}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  Delete Event
+                </Button>
               </div>
-            </div>
-
-            <Button
-              onClick={handleBookTicket}
-              className="w-full bg-primary hover:bg-primary-hover h-12 text-base font-semibold"
-              disabled={event.availableTickets === 0}
-            >
-              <Ticket className="mr-2 h-5 w-5" />
-              {event.availableTickets > 0 ? "Book Tickets Now" : "Sold Out"}
-            </Button>
-
-            {event.availableTickets > 0 && event.availableTickets < 50 && (
-              <p className="text-sm text-destructive mt-3 text-center font-medium">
-                Only {event.availableTickets} tickets left!
-              </p>
             )}
           </Card>
         </div>

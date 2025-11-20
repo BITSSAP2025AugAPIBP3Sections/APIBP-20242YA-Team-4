@@ -3,19 +3,18 @@ package com.openEvent.event_service.Services;
 import com.openEvent.event_service.Entities.Notification;
 import com.openEvent.event_service.Repositories.NotificationRepositoryInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NotificationService {
 
-    private final NotificationRepositoryInterface notificationRepository;
-
     @Autowired
-    public NotificationService(NotificationRepositoryInterface notificationRepository) {
-        this.notificationRepository = notificationRepository;
-    }
+    private NotificationRepositoryInterface notificationRepository;
 
     public List<Notification> getAllNotifications() {
         return notificationRepository.findAll();
@@ -53,5 +52,40 @@ public class NotificationService {
         n.setRecipient(recipient);
         // The sentAt will be set by @CreationTimestamp, here this is gonna be setup
         return notificationRepository.save(n);
+    }
+    
+    // =============================
+    // KAFKA LISTENERS
+    // =============================
+    
+    @KafkaListener(topics = "event-notifications", groupId = "notification-service-group")
+    public void consumeEventNotification(Map<String, Object> message) {
+        try {
+            Notification notification = new Notification();
+            notification.setTitle("New Event");
+            notification.setMessage((String) message.get("message"));
+            notification.setRecipient("all"); // Broadcast to all users
+            notification.setSentAt(LocalDateTime.now());
+            
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            // Error saving notification - handle silently
+        }
+    }
+    
+    @KafkaListener(topics = "payment-notifications", groupId = "notification-service-group")
+    public void consumePaymentNotification(Map<String, Object> message) {
+        try {
+            Long userId = ((Number) message.get("userId")).longValue();
+            Notification notification = new Notification();
+            notification.setTitle("Payment Successful");
+            notification.setMessage((String) message.get("message"));
+            notification.setRecipient("user:" + userId);
+            notification.setSentAt(LocalDateTime.now());
+            
+            notificationRepository.save(notification);
+        } catch (Exception e) {
+            // Error saving notification - handle silently
+        }
     }
 }

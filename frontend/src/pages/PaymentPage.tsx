@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAuth } from '@/context/AuthContext';
+import { paymentAPI, ticketAPI } from '@/lib/api-service';
+import { toast as sonnerToast } from 'sonner';
 
 export default function PaymentPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { addNotification } = useNotifications();
+  const { user } = useAuth();
   
   const eventId = searchParams.get('eventId');
   const eventName = searchParams.get('eventName') || 'Event';
@@ -27,33 +27,54 @@ export default function PaymentPage() {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      sonnerToast.error("Please login to complete payment");
+      navigate("/login");
+      return;
+    }
+
     if (!cardNumber || !expiryDate || !cvv || !cardName) {
-      toast({
-        title: "Error",
-        description: "Please fill in all payment details",
-        variant: "destructive",
-      });
+      sonnerToast.error("Please fill in all payment details");
       return;
     }
 
     setProcessing(true);
     
-    // Simulate payment processing
-    setTimeout(() => {
-      setProcessing(false);
-      
-      addNotification({
-        type: 'success',
-        message: `Payment successful! Ticket for ${eventName} confirmed.`
-      });
-      
-      toast({
-        title: "Payment Successful!",
-        description: "Your ticket has been booked successfully.",
-      });
+    try {
+      // Step 1: Initiate Payment
+      const paymentData = {
+        userId: parseInt(user.id),
+        eventId: parseInt(eventId!),
+        amount: parseFloat(price),
+        paymentMethod: "CREDIT_CARD"
+      };
+
+      console.log('💳 Initiating payment:', paymentData);
+      const payment = await paymentAPI.initiatePayment(paymentData);
+      console.log('✅ Payment created:', payment);
+
+      // Step 2: Create Ticket
+      const ticketData = {
+        userId: parseInt(user.id),
+        eventId: parseInt(eventId!),
+        price: parseFloat(price),
+        status: "BOOKED"
+      };
+
+      console.log('🎫 Creating ticket:', ticketData);
+      const ticket = await ticketAPI.createTicket(ticketData);
+      console.log('✅ Ticket created:', ticket);
+
+      // Success!
+      sonnerToast.success("Ticket booked successfully!");
       
       navigate('/my-tickets');
-    }, 2000);
+    } catch (error) {
+      console.error('❌ Payment/Ticket error:', error);
+      sonnerToast.error("Payment failed. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const formatCardNumber = (value: string) => {

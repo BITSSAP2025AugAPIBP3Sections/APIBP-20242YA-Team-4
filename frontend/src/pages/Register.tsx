@@ -3,80 +3,112 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { UserPlus } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { authAPI, RegisterData } from "@/lib/api-service";
 
-const Profile = () => {
-  const { user } = useAuth();
+const Register = () => {
   const navigate = useNavigate();
 
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [reEnterPassword, setReEnterPassword] = useState("");
-  const [role, setRole] = useState(user?.role || "attendee");
+  const [role, setRole] = useState("ATTENDEE");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation
     if (password !== reEnterPassword) {
       toast.error("Passwords do not match!");
       return;
     }
 
+    if (!fullName || !username || !email || !password) {
+      toast.error("Please fill all fields!");
+      return;
+    }
+
     setIsLoading(true);
 
-    // TODO: Implement actual update logic (API call)
-    setTimeout(() => {
-      toast.success("Profile updated successfully!");
-      setIsLoading(false);
+    try {
+      const registerData: RegisterData = {
+        username,
+        email,
+        password,
+        fullName,
+        role,
+      };
 
-      if (role === "organizer") {
-        navigate("/event-organizer");
+      await authAPI.register(registerData);
+      
+      toast.success("Registration successful! Please login.");
+      navigate("/login");
+      
+    } catch (error) {
+      console.error("Registration error:", error);
+      
+      // Detailed error logging
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any;
+        console.log('❌ Status:', axiosError.response?.status);
+        console.log('❌ Status Text:', axiosError.response?.statusText);
+        console.log('❌ Response Data:', axiosError.response?.data);
+        console.log('❌ Request URL:', axiosError.config?.url);
+        
+        const errorMessage = axiosError.response?.data?.error || 
+                           axiosError.response?.data?.message || 
+                           axiosError.message || 
+                           "Registration failed";
+        toast.error(errorMessage);
+      } else {
+        console.log('❌ Unknown error:', error);
+        toast.error("Registration failed - Please check if backend is running");
       }
-    }, 1000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">My Profile</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* User Info Card */}
-        <Card className="p-6 lg:col-span-1">
-          <div className="text-center">
-            <div className="w-24 h-24 bg-gradient-hero rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-12 w-12 text-white" />
-            </div>
-            <h2 className="text-xl font-bold mb-1">{user?.name}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{user?.email}</p>
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              {user?.role === "organizer" ? "Event Organizer" : "Event Attendee"}
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <div className="p-6">
+          <div className="text-center mb-6">
+            <UserPlus className="h-12 w-12 text-primary mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
+            <p className="text-gray-600">Join our event platform today</p>
           </div>
-        </Card>
-
-        {/* Profile Update Form */}
-        <Card className="p-6 lg:col-span-2">
-          <h2 className="text-2xl font-bold mb-6">Account Information</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="fullName">Full Name</Label>
               <Input
-                id="name"
+                id="fullName"
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
                 required
               />
             </div>
 
-            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Choose a username"
+                required
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -84,11 +116,11 @@ const Profile = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
                 required
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -96,10 +128,11 @@ const Profile = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a password"
+                required
               />
             </div>
 
-            {/* Re-enter Password */}
             <div className="space-y-2">
               <Label htmlFor="reEnterPassword">Re-enter Password</Label>
               <Input
@@ -107,36 +140,72 @@ const Profile = () => {
                 type="password"
                 value={reEnterPassword}
                 onChange={(e) => setReEnterPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
               />
             </div>
 
-            {/* Account Type */}
             <div className="space-y-2">
               <Label htmlFor="role">Account Type</Label>
               <select
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="bg-muted block w-full rounded-md border border-input px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="organizer">Event Organizer</option>
-                <option value="attendee">Event Attendee</option>
+                <option value="ATTENDEE">Event Attendee</option>
+                <option value="ORGANIZER">Event Organizer</option>
               </select>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary-hover"
+              className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? "Updating..." : "Update Profile"}
+              {isLoading ? "Creating Account..." : "Sign Up"}
+            </Button>
+            
+            {/* Debug: Test backend connection */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={async () => {
+                try {
+                  console.log('🧪 Testing backend connection...');
+                  const response = await fetch('http://localhost:8080/actuator/health');
+                  console.log('✅ Backend connection test:', response.status, response.statusText);
+                  if (response.ok) {
+                    toast.success('✅ Backend is running!');
+                  } else {
+                    toast.error(`❌ Backend responded with: ${response.status}`);
+                  }
+                } catch (error) {
+                  console.error('❌ Backend connection failed:', error);
+                  toast.error('❌ Cannot connect to backend - is it running on port 8080?');
+                }
+              }}
+            >
+              🧪 Test Backend Connection
             </Button>
           </form>
-        </Card>
-      </div>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link 
+                to="/login" 
+                className="text-primary hover:underline font-medium"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };
 
-export default Profile;
+export default Register;

@@ -92,11 +92,11 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", "Email is required"));
             }
-            // Only allow emails in the format something@gmail.com
-            String gmailRegex = "^[A-Za-z0-9+_.-]+@gmail\\.com$";
-            if (!email.matches(gmailRegex)) {
+            // Basic email validation
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+            if (!email.matches(emailRegex)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "Email must be a valid Gmail address (name@gmail.com)"));
+                        .body(Map.of("error", "Please enter a valid email address"));
             }
 
             System.out.println("Registration attempt for username: " + username + ", email: " + email + ", role: " + role);

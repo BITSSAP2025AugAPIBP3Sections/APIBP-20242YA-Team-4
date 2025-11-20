@@ -29,6 +29,20 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
+    @Column(name = "price")
+    private Double price;
+
+    @Column(name = "capacity")
+    private Integer capacity;
+
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    // Constructors
+
     public Event() { }
 
     public Event(Long id, String title, String description, String location, LocalDateTime eventDate) {
@@ -52,5 +66,39 @@ public class Event {
     public void setLocation(String location) { this.location = location; }
 
     public LocalDateTime getEventDate() { return eventDate; }
-    public void setEventDate(LocalDateTime eventDate) { this.eventDate = eventDate; }
+    public void setEventDate(LocalDateTime eventDate) {
+        this.eventDate = eventDate;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
