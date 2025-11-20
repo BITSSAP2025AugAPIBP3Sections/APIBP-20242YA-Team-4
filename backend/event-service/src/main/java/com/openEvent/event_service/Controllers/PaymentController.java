@@ -2,6 +2,7 @@ package com.openEvent.event_service.Controllers;
 
 import com.openEvent.event_service.Entities.Payment;
 import com.openEvent.event_service.Services.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +12,14 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
+
+@Tag(name = "Payment Controller", description = "Handles payment processing operations")
 @RestController
 @RequestMapping("/api/v1/payments")
 @CrossOrigin(origins = "*")
@@ -25,6 +29,7 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @PostMapping("/initiate")
+    @Operation(summary = "Initiate payment", description = "Initiate a payment for an event by a user.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Payment initiated successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Payment.class))),
@@ -59,6 +64,7 @@ public class PaymentController {
     }
 
     @GetMapping("/status/{paymentId}")
+    @Operation(summary = "Check payment status", description = "Check the status of a payment by its ID.")
     public ResponseEntity<?> checkPaymentStatus(@PathVariable Long paymentId) {
         try {
             Payment.PaymentStatus status = paymentService.getPaymentStatus(paymentId);
@@ -70,6 +76,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}")
+    @Operation(summary = "Get payment by ID", description = "Retrieve payment details by payment ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Payment retrieved successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Payment.class))),
@@ -91,6 +98,7 @@ public class PaymentController {
     }
 
     @PostMapping("/refund/{paymentId}")
+    @Operation(summary = "Initiate refund", description = "Initiate a refund for a payment by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Refund processed successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Payment.class))),
@@ -107,6 +115,7 @@ public class PaymentController {
     }
 
     @PatchMapping("/{paymentId}/status")
+    @Operation(summary = "Update payment status", description = "Update the status of a payment by its ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Payment status updated successfully",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = Payment.class))),

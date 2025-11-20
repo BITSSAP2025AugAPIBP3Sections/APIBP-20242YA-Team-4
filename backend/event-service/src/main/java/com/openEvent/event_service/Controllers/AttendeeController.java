@@ -1,5 +1,6 @@
 package com.openEvent.event_service.Controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,11 +10,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Tag(name = "Attendee Controller", description = "Handles attendee profile operations")
 @RestController
 @RequestMapping("/api/v1/attendees")
 @CrossOrigin(origins = "*")
@@ -23,6 +26,7 @@ public class AttendeeController {
     private com.openEvent.event_service.Services.AttendeeService attendeeService;
 
     @GetMapping
+    @Operation(summary = "Get all attendees", description = "Retrieve a list of all attendees.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Attendees retrieved successfully")
     })
@@ -36,6 +40,7 @@ public class AttendeeController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get attendee by ID", description = "Retrieve an attendee by their unique ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Attendee retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.openEvent.event_service.Entities.Attendee.class))),
@@ -57,6 +62,7 @@ public class AttendeeController {
     }
 
     @GetMapping("/username/{username}")
+    @Operation(summary = "Get attendee by username", description = "Retrieve an attendee by their username.")
     public ResponseEntity<?> getAttendeeByUsername(@PathVariable String username) {
         try {
             com.openEvent.event_service.Entities.Attendee attendee = attendeeService.getAttendeeByUsername(username);
@@ -73,6 +79,7 @@ public class AttendeeController {
     }
 
     @PutMapping("/{id}/profile")
+    @Operation(summary = "Update attendee profile", description = "Update the profile information of an attendee.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                     mediaType = "application/json",
@@ -101,6 +108,7 @@ public class AttendeeController {
     }
 
     @PutMapping("/{id}/password")
+    @Operation(summary = "Change attendee password", description = "Change the password for an attendee.")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                     mediaType = "application/json",
@@ -131,6 +139,7 @@ public class AttendeeController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete attendee", description = "Delete an attendee by their unique ID.")
     public ResponseEntity<?> deleteAttendee(@PathVariable Long id) {
         try {
             attendeeService.deleteAttendee(id);
