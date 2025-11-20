@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "Event Platform - User Service API",
-    "description": "APIs for User Management (Register, Login)",
+    "title": "openEvent",
+    "description": "Plan your event. Be there when it happens.",
     "version": "1.0.0"
   },
   "servers": [
