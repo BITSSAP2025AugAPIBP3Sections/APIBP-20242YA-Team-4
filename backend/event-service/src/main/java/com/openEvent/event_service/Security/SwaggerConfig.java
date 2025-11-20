@@ -11,8 +11,8 @@ public class SwaggerConfig {
     public OpenAPI userAPI() {
         return new OpenAPI().info(
                 new Info()
-                        .title("Event Platform - User Service API")
-                        .description("APIs for User Management (Register, Login)")
+                        .title("openEvent")
+                        .description("Plan your event. Be there when it happens.")
                         .version("1.0.0"));
     }
 }

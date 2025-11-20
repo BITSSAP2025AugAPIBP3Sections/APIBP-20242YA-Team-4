@@ -1,76 +1,33 @@
 openapi: 3.0.1
 info:
-  title: Event Platform - User Service API
-  description: APIs for User Management (Register, Login)
+  title: openEvent
+  description: Plan your event. Be there when it happens.
   version: 1.0.0
 servers:
   - url: http://localhost:8080
     description: Generated server url
+tags:
+  - name: Attendee Controller
+    description: Handles attendee profile operations
+  - name: Notification Controller
+    description: Handles notification management operations
+  - name: Ticket Controller
+    description: Handles ticket booking, retrieval, and cancellation
+  - name: Payment Controller
+    description: Handles payment processing operations
+  - name: Authentication Controller
+    description: Handles user login and registration
+  - name: Event Controller
+    description: Handles event management operations
+  - name: Feedback Controller
+    description: Handles feedback submission and management
 paths:
-  /api/v1/users/{id}/profile:
-    put:
-      tags:
-        - user-controller
-      operationId: updateUserProfile
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: string
-            example:
-              fullName: Updated Name
-              email: newemail@example.com
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '/':
-              schema:
-                type: object
-  /api/v1/users/{id}/password:
-    put:
-      tags:
-        - user-controller
-      operationId: changePassword
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: string
-            example:
-              currentPassword: oldpassword
-              newPassword: newpassword123
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '/':
-              schema:
-                type: object
   /api/v1/notifications/{id}:
     get:
       tags:
-        - notification-controller
+        - Notification Controller
+      summary: Get notification by ID
+      description: Retrieve a notification by its unique ID.
       operationId: getNotificationById
       parameters:
         - name: id
@@ -88,7 +45,9 @@ paths:
                 $ref: '#/components/schemas/Notification'
     put:
       tags:
-        - notification-controller
+        - Notification Controller
+      summary: Update notification
+      description: Update an existing notification by its ID.
       operationId: updateNotification
       parameters:
         - name: id
@@ -112,7 +71,9 @@ paths:
                 $ref: '#/components/schemas/Notification'
     delete:
       tags:
-        - notification-controller
+        - Notification Controller
+      summary: Delete notification
+      description: Delete a notification by its unique ID.
       operationId: deleteNotification
       parameters:
         - name: id
@@ -127,7 +88,9 @@ paths:
   /api/v1/feedback/{id}:
     get:
       tags:
-        - feedback-controller
+        - Feedback Controller
+      summary: Get feedback by ID
+      description: Retrieve feedback by its unique ID.
       operationId: getFeedbackById
       parameters:
         - name: id
@@ -151,7 +114,9 @@ paths:
                 type: object
     put:
       tags:
-        - feedback-controller
+        - Feedback Controller
+      summary: Update feedback
+      description: Update feedback for an event by a user.
       operationId: updateFeedback
       parameters:
         - name: id
@@ -165,8 +130,7 @@ paths:
           application/json:
             schema:
               type: object
-              additionalProperties:
-                type: object
+              additionalProperties: {}
             example:
               comment: Updated comment
               rating: 4
@@ -192,7 +156,9 @@ paths:
                 type: object
     delete:
       tags:
-        - feedback-controller
+        - Feedback Controller
+      summary: Delete feedback
+      description: Delete feedback by its unique ID.
       operationId: deleteFeedback
       parameters:
         - name: id
@@ -217,7 +183,9 @@ paths:
   /api/v1/events/{id}:
     get:
       tags:
-        - event-controller
+        - Event Controller
+      summary: Get event by ID
+      description: Retrieve an event by its unique ID.
       operationId: getEventById
       parameters:
         - name: id
@@ -232,10 +200,12 @@ paths:
           content:
             '/':
               schema:
-                $ref: '#/components/schemas/Event'
+                type: object
     put:
       tags:
-        - event-controller
+        - Event Controller
+      summary: Update event
+      description: Update an existing event by its ID.
       operationId: updateEvent
       parameters:
         - name: id
@@ -256,10 +226,12 @@ paths:
           content:
             '/':
               schema:
-                $ref: '#/components/schemas/Event'
+                type: object
     delete:
       tags:
-        - event-controller
+        - Event Controller
+      summary: Delete event
+      description: Delete an event by its unique ID.
       operationId: deleteEvent
       parameters:
         - name: id
@@ -271,10 +243,80 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            '/':
+              schema:
+                type: object
+  /api/v1/attendees/{id}/profile:
+    put:
+      tags:
+        - Attendee Controller
+      summary: Update attendee profile
+      description: Update the profile information of an attendee.
+      operationId: updateAttendeeProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+            example:
+              fullName: Updated Name
+              email: newemail@example.com
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '/':
+              schema:
+                type: object
+  /api/v1/attendees/{id}/password:
+    put:
+      tags:
+        - Attendee Controller
+      summary: Change attendee password
+      description: Change the password for an attendee.
+      operationId: changeAttendeePassword
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+            example:
+              currentPassword: oldpassword
+              newPassword: newpassword123
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '/':
+              schema:
+                type: object
   /api/v1/tickets/book:
     post:
       tags:
-        - ticket-controller
+        - Ticket Controller
+      summary: Book ticket
+      description: Book a new ticket for an event.
       operationId: bookTicket
       requestBody:
         content:
@@ -292,7 +334,9 @@ paths:
   /api/v1/payments/refund/{paymentId}:
     post:
       tags:
-        - payment-controller
+        - Payment Controller
+      summary: Initiate refund
+      description: Initiate a refund for a payment by its ID.
       operationId: initiateRefund
       parameters:
         - name: paymentId
@@ -317,15 +361,16 @@ paths:
   /api/v1/payments/initiate:
     post:
       tags:
-        - payment-controller
+        - Payment Controller
+      summary: Initiate payment
+      description: Initiate a payment for an event by a user.
       operationId: initiatePayment
       requestBody:
         content:
           application/json:
             schema:
               type: object
-              additionalProperties:
-                type: object
+              additionalProperties: {}
             example:
               userId: 1
               eventId: 1
@@ -348,7 +393,9 @@ paths:
   /api/v1/notifications:
     get:
       tags:
-        - notification-controller
+        - Notification Controller
+      summary: Get all notifications
+      description: Retrieve a list of all notifications.
       operationId: getAllNotifications
       responses:
         '200':
@@ -361,7 +408,9 @@ paths:
                   $ref: '#/components/schemas/Notification'
     post:
       tags:
-        - notification-controller
+        - Notification Controller
+      summary: Create notification
+      description: Create a new notification.
       operationId: createNotification
       requestBody:
         content:
@@ -379,15 +428,16 @@ paths:
   /api/v1/feedback:
     post:
       tags:
-        - feedback-controller
+        - Feedback Controller
+      summary: Submit feedback
+      description: Submit feedback for an event by a user.
       operationId: submitFeedback
       requestBody:
         content:
           application/json:
             schema:
               type: object
-              additionalProperties:
-                type: object
+              additionalProperties: {}
             example:
               userId: 1
               eventId: 1
@@ -410,7 +460,9 @@ paths:
   /api/v1/events:
     get:
       tags:
-        - event-controller
+        - Event Controller
+      summary: Get all events
+      description: Retrieve a list of all events.
       operationId: getAllEvents
       responses:
         '200':
@@ -418,12 +470,12 @@ paths:
           content:
             '/':
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Event'
+                type: object
     post:
       tags:
-        - event-controller
+        - Event Controller
+      summary: Create event
+      description: Create a new event.
       operationId: createEvent
       requestBody:
         content:
@@ -437,11 +489,33 @@ paths:
           content:
             '/':
               schema:
-                $ref: '#/components/schemas/Event'
+                type: object
+  /api/v1/bookings:
+    post:
+      tags:
+        - booking-controller
+      summary: Book ticket
+      description: Book a ticket for an event using the booking saga pattern. Returns booking result with status and details.
+      operationId: bookTicket_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '/':
+              schema:
+                $ref: '#/components/schemas/BookingResult'
   /api/auth/signup:
     post:
       tags:
-        - auth-controller
+        - Authentication Controller
+      summary: User Registration
+      description: Registers a new user and returns user details.
       operationId: register
       requestBody:
         content:
@@ -467,7 +541,9 @@ paths:
   /api/auth/login:
     post:
       tags:
-        - auth-controller
+        - Authentication Controller
+      summary: User Login
+      description: Authenticates user and returns a JWT token with user details.
       operationId: login
       requestBody:
         content:
@@ -490,7 +566,9 @@ paths:
   /api/v1/payments/{paymentId}/status:
     patch:
       tags:
-        - payment-controller
+        - Payment Controller
+      summary: Update payment status
+      description: Update the status of a payment by its ID.
       operationId: updatePaymentStatus
       parameters:
         - name: paymentId
@@ -529,85 +607,12 @@ paths:
             '/':
               schema:
                 type: object
-  /api/v1/users:
-    get:
-      tags:
-        - user-controller
-      operationId: getAllUsers
-      responses:
-        '200':
-          description: Users retrieved successfully
-          content:
-            '/':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-  /api/v1/users/{id}:
-    get:
-      tags:
-        - user-controller
-      operationId: getUserById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: User retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: User not found
-          content:
-            '/':
-              schema:
-                type: object
-    delete:
-      tags:
-        - user-controller
-      operationId: deleteUser
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            '/':
-              schema:
-                type: object
-  /api/v1/users/username/{username}:
-    get:
-      tags:
-        - user-controller
-      operationId: getUserByUsername
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '/':
-              schema:
-                type: object
   /api/v1/tickets/{ticketId}:
     get:
       tags:
-        - ticket-controller
+        - Ticket Controller
+      summary: Get ticket by ID
+      description: Retrieve a ticket by its unique ID.
       operationId: getTicketById
       parameters:
         - name: ticketId
@@ -625,7 +630,9 @@ paths:
                 $ref: '#/components/schemas/Ticket'
     delete:
       tags:
-        - ticket-controller
+        - Ticket Controller
+      summary: Cancel ticket
+      description: Cancel a ticket by its unique ID.
       operationId: cancelTicket
       parameters:
         - name: ticketId
@@ -644,7 +651,9 @@ paths:
   /api/v1/tickets/user/{userId}:
     get:
       tags:
-        - ticket-controller
+        - Ticket Controller
+      summary: Get tickets by user
+      description: Retrieve all tickets booked by a specific user.
       operationId: getTicketsByUser
       parameters:
         - name: userId
@@ -665,7 +674,9 @@ paths:
   /api/v1/tickets/events/{eventId}:
     get:
       tags:
-        - ticket-controller
+        - Ticket Controller
+      summary: Get tickets by event
+      description: Retrieve all tickets for a specific event.
       operationId: getTicketsByEvent
       parameters:
         - name: eventId
@@ -686,7 +697,9 @@ paths:
   /api/v1/payments/{paymentId}:
     get:
       tags:
-        - payment-controller
+        - Payment Controller
+      summary: Get payment by ID
+      description: Retrieve payment details by payment ID.
       operationId: getPaymentById
       parameters:
         - name: paymentId
@@ -711,7 +724,9 @@ paths:
   /api/v1/payments/status/{paymentId}:
     get:
       tags:
-        - payment-controller
+        - Payment Controller
+      summary: Check payment status
+      description: Check the status of a payment by its ID.
       operationId: checkPaymentStatus
       parameters:
         - name: paymentId
@@ -720,6 +735,103 @@ paths:
           schema:
             type: integer
             format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '/':
+              schema:
+                type: object
+  /api/v1/events/fail:
+    get:
+      tags:
+        - Event Controller
+      summary: Get all events (fail)
+      description: Simulate a failure when retrieving all events.
+      operationId: getAllEventsFail
+      responses:
+        '200':
+          description: OK
+          content:
+            '/':
+              schema:
+                type: object
+  /api/v1/attendees:
+    get:
+      tags:
+        - Attendee Controller
+      summary: Get all attendees
+      description: Retrieve a list of all attendees.
+      operationId: getAllAttendees
+      responses:
+        '200':
+          description: Attendees retrieved successfully
+          content:
+            '/':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendee'
+  /api/v1/attendees/{id}:
+    get:
+      tags:
+        - Attendee Controller
+      summary: Get attendee by ID
+      description: Retrieve an attendee by their unique ID.
+      operationId: getAttendeeById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Attendee retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendee'
+        '404':
+          description: Attendee not found
+          content:
+            '/':
+              schema:
+                type: object
+    delete:
+      tags:
+        - Attendee Controller
+      summary: Delete attendee
+      description: Delete an attendee by their unique ID.
+      operationId: deleteAttendee
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '/':
+              schema:
+                type: object
+  /api/v1/attendees/username/{username}:
+    get:
+      tags:
+        - Attendee Controller
+      summary: Get attendee by username
+      description: Retrieve an attendee by their username.
+      operationId: getAttendeeByUsername
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: OK
@@ -834,7 +946,36 @@ components:
           type: string
         failureReason:
           type: string
-    User:
+    BookingRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        eventId:
+          type: integer
+          format: int64
+        seatNumber:
+          type: string
+        price:
+          type: number
+          format: double
+        paymentMethod:
+          type: string
+    BookingResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        ticketId:
+          type: integer
+          format: int64
+        paymentId:
+          type: integer
+          format: int64
+        message:
+          type: string
+    Attendee:
       type: object
       properties:
         id:
