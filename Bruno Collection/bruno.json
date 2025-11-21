@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Event Platform - User Service API copy",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

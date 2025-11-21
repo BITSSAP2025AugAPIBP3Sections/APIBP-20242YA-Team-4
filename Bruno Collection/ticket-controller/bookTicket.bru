@@ -1,0 +1,22 @@
+meta {
+  name: bookTicket
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/tickets/book
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 0,
+    "userId": 0,
+    "eventId": 0,
+    "seatNumber": "",
+    "price": "",
+    "status": ""
+  }
+}

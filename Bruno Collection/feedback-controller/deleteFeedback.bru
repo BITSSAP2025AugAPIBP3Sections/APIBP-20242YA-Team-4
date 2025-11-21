@@ -1,0 +1,15 @@
+meta {
+  name: deleteFeedback
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/feedback/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}

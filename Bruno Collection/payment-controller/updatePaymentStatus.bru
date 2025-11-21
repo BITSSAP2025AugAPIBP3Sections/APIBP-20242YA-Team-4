@@ -1,0 +1,19 @@
+meta {
+  name: updatePaymentStatus
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/payments/:paymentId/status
+  body: json
+  auth: inherit
+}
+
+params:path {
+  paymentId: 
+}
+
+body:json {
+  {}
+}

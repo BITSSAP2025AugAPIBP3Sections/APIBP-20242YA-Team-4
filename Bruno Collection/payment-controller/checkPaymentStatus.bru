@@ -1,0 +1,15 @@
+meta {
+  name: checkPaymentStatus
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/payments/status/:paymentId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  paymentId: 
+}

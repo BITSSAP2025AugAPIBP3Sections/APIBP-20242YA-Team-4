@@ -1,0 +1,25 @@
+meta {
+  name: updateNotification
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/v1/notifications/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "id": 0,
+    "title": "",
+    "message": "",
+    "recipient": "",
+    "sentAt": ""
+  }
+}

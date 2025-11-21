@@ -1,0 +1,15 @@
+meta {
+  name: getUserByUsername
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users/username/:username
+  body: none
+  auth: inherit
+}
+
+params:path {
+  username: 
+}
