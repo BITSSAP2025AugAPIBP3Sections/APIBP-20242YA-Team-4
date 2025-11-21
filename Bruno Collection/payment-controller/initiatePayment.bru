@@ -1,0 +1,15 @@
+meta {
+  name: initiatePayment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/payments/initiate
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}

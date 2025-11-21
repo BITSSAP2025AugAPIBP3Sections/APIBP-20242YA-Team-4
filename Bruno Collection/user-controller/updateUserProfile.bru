@@ -1,0 +1,19 @@
+meta {
+  name: updateUserProfile
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/v1/users/:id/profile
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {}
+}

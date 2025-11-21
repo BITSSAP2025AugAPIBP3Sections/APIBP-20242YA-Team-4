@@ -1,0 +1,21 @@
+meta {
+  name: createNotification
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/notifications
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 0,
+    "title": "",
+    "message": "",
+    "recipient": "",
+    "sentAt": ""
+  }
+}

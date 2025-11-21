@@ -1,0 +1,15 @@
+meta {
+  name: submitFeedback
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/feedback
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}

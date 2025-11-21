@@ -1,0 +1,15 @@
+meta {
+  name: getTicketsByUser
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/tickets/user/:userId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  userId: 
+}

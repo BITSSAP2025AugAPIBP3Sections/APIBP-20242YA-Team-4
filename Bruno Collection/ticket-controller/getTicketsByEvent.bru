@@ -1,0 +1,15 @@
+meta {
+  name: getTicketsByEvent
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/tickets/events/:eventId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  eventId: 
+}

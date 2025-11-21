@@ -1,0 +1,15 @@
+meta {
+  name: initiateRefund
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/payments/refund/:paymentId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  paymentId: 
+}

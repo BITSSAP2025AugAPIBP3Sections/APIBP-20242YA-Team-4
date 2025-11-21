@@ -1,0 +1,21 @@
+meta {
+  name: createEvent
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/events
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 0,
+    "title": "",
+    "description": "",
+    "location": "",
+    "eventDate": ""
+  }
+}
