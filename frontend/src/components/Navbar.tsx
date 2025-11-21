@@ -39,7 +39,7 @@ const Navbar = () => {
 
           {user ? (
             <>
-              {user.role === "organizer" && (
+              {user.role === "ORGANIZER" && (
                 <Link to="/create-event">
                   <Button variant="default" className="bg-accent hover:bg-accent-hover">
                     Create Event
@@ -47,7 +47,7 @@ const Navbar = () => {
                 </Link>
               )}
 
-              <NotificationBell />
+              {user.role !== "ORGANIZER" && <NotificationBell />}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -57,7 +57,7 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-popover">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-sm font-medium">{user.fullName}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
@@ -65,10 +65,12 @@ const Navbar = () => {
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/my-tickets")}>
-                    <Ticket className="mr-2 h-4 w-4" />
-                    My Tickets
-                  </DropdownMenuItem>
+                  {user.role !== "ORGANIZER" && (
+                    <DropdownMenuItem onClick={() => navigate("/my-tickets")}>
+                      <Ticket className="mr-2 h-4 w-4" />
+                      My Tickets
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />

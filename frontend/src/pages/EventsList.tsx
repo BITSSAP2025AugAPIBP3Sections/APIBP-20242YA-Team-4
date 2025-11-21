@@ -1,12 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import EventCard from "@/components/EventCard";
+import { eventAPI } from "@/lib/api-service";
+import { toast } from "sonner";
 
 const EventsList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [allEvents, setAllEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch events from backend
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const events = await eventAPI.getAllEvents();
+        console.log('✅ Fetched events:', events);
+        setAllEvents(events);
+      } catch (error) {
+        console.error('❌ Failed to fetch events:', error);
+        toast.error("Failed to load events");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   const categories = [
     { name: "All", value: null, color: "bg-primary/10 text-primary hover:bg-primary/20" },
@@ -17,79 +39,25 @@ const EventsList = () => {
     { name: "Sports", value: "sports", color: "bg-destructive/10 text-destructive hover:bg-destructive/20" },
   ];
 
-  // Mock events data
-  const allEvents = [
-    {
-      id: "1",
-      title: "Summer Music Festival 2025",
-      description: "Join us for an unforgettable night of live music with top artists from around the world.",
-      date: "2025-07-15",
-      location: "Central Park, New York",
-      category: "festival",
-      price: 49.99,
-      availableTickets: 500,
-    },
-    {
-      id: "2",
-      title: "Tech Innovation Summit",
-      description: "Discover the latest trends in technology and network with industry leaders.",
-      date: "2025-08-20",
-      location: "Convention Center, San Francisco",
-      category: "workshop",
-      price: 99.99,
-      availableTickets: 200,
-    },
-    {
-      id: "3",
-      title: "Rock Concert: The Legends",
-      description: "Experience the greatest rock bands of all time in one epic night.",
-      date: "2025-09-10",
-      location: "Madison Square Garden, NYC",
-      category: "concert",
-      price: 79.99,
-      availableTickets: 1000,
-    },
-    {
-      id: "4",
-      title: "College Fest 2025",
-      description: "Annual college cultural festival with performances, competitions, and fun activities.",
-      date: "2025-06-05",
-      location: "University Campus, Boston",
-      category: "college",
-      price: 15.00,
-      availableTickets: 800,
-    },
-    {
-      id: "5",
-      title: "Marathon Championship",
-      description: "Join thousands of runners in this year's biggest marathon event.",
-      date: "2025-10-15",
-      location: "City Center, Chicago",
-      category: "sports",
-      price: 25.00,
-      availableTickets: 2000,
-    },
-    {
-      id: "6",
-      title: "Jazz Night Under Stars",
-      description: "An evening of smooth jazz performances in an outdoor setting.",
-      date: "2025-07-22",
-      location: "Lakeside Park, Seattle",
-      category: "concert",
-      price: 35.00,
-      availableTickets: 300,
-    },
-  ];
-
-  const filteredEvents = allEvents.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredEvents = allEvents.filter((event: any) => {
+    const matchesSearch = event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesCategory = selectedCategory === null || event.category === selectedCategory;
+    const matchesCategory = selectedCategory === null || event.category?.toLowerCase() === selectedCategory;
     
     return matchesSearch && matchesCategory;
   });
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-lg text-muted-foreground">Loading events...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

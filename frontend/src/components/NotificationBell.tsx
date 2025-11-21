@@ -78,7 +78,10 @@ export const NotificationBell = () => {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(notification.id);
+                        }}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
@@ -87,7 +90,10 @@ export const NotificationBell = () => {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => clearNotification(notification.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearNotification(notification.id);
+                      }}
                     >
                       <X className="h-4 w-4" />
                     </Button>

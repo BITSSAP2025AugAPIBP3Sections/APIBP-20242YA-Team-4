@@ -1,42 +1,31 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Search, Ticket } from "lucide-react";
 import EventCard from "@/components/EventCard";
+import { eventAPI } from "@/lib/api-service";
 
 const Home = () => {
-  // Mock featured events
-  const featuredEvents = [
-    {
-      id: "1",
-      title: "Summer Music Festival 2025",
-      description: "Join us for an unforgettable night of live music with top artists from around the world.",
-      date: "2025-07-15",
-      location: "Central Park, New York",
-      category: "festival",
-      price: 49.99,
-      availableTickets: 500,
-    },
-    {
-      id: "2",
-      title: "Tech Innovation Summit",
-      description: "Discover the latest trends in technology and network with industry leaders.",
-      date: "2025-08-20",
-      location: "Convention Center, San Francisco",
-      category: "workshop",
-      price: 99.99,
-      availableTickets: 200,
-    },
-    {
-      id: "3",
-      title: "Rock Concert: The Legends",
-      description: "Experience the greatest rock bands of all time in one epic night.",
-      date: "2025-09-10",
-      location: "Madison Square Garden, NYC",
-      category: "concert",
-      price: 79.99,
-      availableTickets: 1000,
-    },
-  ];
+  const [featuredEvents, setFeaturedEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch top 3 recent events from backend
+  useEffect(() => {
+    const fetchFeaturedEvents = async () => {
+      try {
+        const events = await eventAPI.getAllEvents();
+        // Get the 3 most recent events (assuming they're ordered by ID or date)
+        const recentEvents = events.slice(-3).reverse(); // Get last 3 and reverse to show newest first
+        setFeaturedEvents(recentEvents);
+      } catch (error) {
+        console.error('❌ Failed to fetch featured events:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeaturedEvents();
+  }, []);
 
   return (
     <div>
@@ -51,22 +40,12 @@ const Home = () => {
             <p className="text-xl mb-8 text-white/90 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-150">
               From concerts to festivals, workshops to sports - find and book tickets for the best events in your city.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+            <div className="flex justify-center animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
               <Link to="/events">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
                   <Search className="mr-2 h-5 w-5" />
                   Browse Events
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="bg-transparent border-2 border-white text-white hover:bg-white/10"
-                >
-                  <Ticket className="mr-2 h-5 w-5" />
-                  Get Started
                 </Button>
               </Link>
             </div>
@@ -115,24 +94,46 @@ const Home = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Events</h2>
           <p className="text-muted-foreground text-lg">
-            Check out the hottest events happening this season
+            Check out the latest events happening now
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredEvents.map((event) => (
-            <EventCard key={event.id} {...event} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-lg text-muted-foreground">Loading featured events...</p>
+          </div>
+        ) : featuredEvents.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredEvents.map((event) => (
+                <EventCard key={event.id} {...event} />
+              ))}
+            </div>
 
-        <div className="text-center mt-12">
-          <Link to="/events">
-            <Button size="lg" className="bg-primary hover:bg-primary-hover">
-              View All Events
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-        </div>
+            <div className="text-center mt-12">
+              <Link to="/events">
+                <Button size="lg" className="bg-primary hover:bg-primary-hover">
+                  View All Events
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-2">No events yet</h3>
+            <p className="text-muted-foreground mb-6">
+              Be the first to create an event!
+            </p>
+            <Link to="/events">
+              <Button size="lg" className="bg-primary hover:bg-primary-hover">
+                Browse Events
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, DollarSign, Users, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,10 +11,12 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { eventAPI } from '@/lib/api-service';
 
-export default function CreateEvent() {
+export default function UpdateEvent() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -28,15 +30,50 @@ export default function CreateEvent() {
     imageUrl: '',
   });
 
+  // Fetch existing event data
+  useEffect(() => {
+    const fetchEvent = async () => {
+      if (!id) return;
+
+      try {
+        const eventData = await eventAPI.getEventById(id);
+        
+        // Parse the eventDate to split into date and time
+        const eventDateTime = new Date(eventData.eventDate);
+        const dateStr = eventDateTime.toISOString().split('T')[0];
+        const timeStr = eventDateTime.toTimeString().slice(0, 5);
+
+        setFormData({
+          title: eventData.title || '',
+          description: eventData.description || '',
+          category: eventData.category || '',
+          date: dateStr,
+          time: timeStr,
+          location: eventData.location || '',
+          price: eventData.price?.toString() || '',
+          capacity: eventData.capacity?.toString() || '',
+          imageUrl: eventData.imageUrl || '',
+        });
+      } catch (error) {
+        console.error('Failed to fetch event:', error);
+        toast.error('Failed to load event data');
+        navigate('/events');
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user || user.role !== 'ORGANIZER') {
-      toast.error("Only organizers can create events");
+      toast.error("Only organizers can update events");
       return;
     }
 
-    // Validate form
     if (!formData.title || !formData.category || !formData.date || !formData.location) {
       toast.error("Please fill in all required fields");
       return;
@@ -45,7 +82,6 @@ export default function CreateEvent() {
     setIsLoading(true);
 
     try {
-      // Combine date and time into ISO format
       const eventDateTime = formData.time 
         ? `${formData.date}T${formData.time}:00`
         : `${formData.date}T00:00:00`;
@@ -61,19 +97,16 @@ export default function CreateEvent() {
         imageUrl: formData.imageUrl || undefined,
       };
 
-      console.log('🚀 Creating event:', eventData);
+      console.log('🔄 Updating event:', eventData);
       
-      await eventAPI.createEvent(eventData);
+      await eventAPI.updateEvent(id!, eventData);
 
-      toast.success(`Event "${formData.title}" created successfully!`);
-      navigate('/events');
+      toast.success(`Event "${formData.title}" updated successfully!`);
+      navigate(`/events/${id}`);
       
     } catch (error) {
-      console.error("❌ Event creation error:", error);
-      const errorMessage = error && typeof error === 'object' && 'response' in error 
-        ? (error as any)?.response?.data?.error || "Failed to create event"
-        : "Failed to create event";
-      toast.error(errorMessage);
+      console.error("❌ Event update error:", error);
+      toast.error("Failed to update event");
     } finally {
       setIsLoading(false);
     }
@@ -83,15 +116,23 @@ export default function CreateEvent() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  if (isFetching) {
+    return (
+      <div className="min-h-screen pt-20 pb-12 px-4 flex items-center justify-center">
+        <p className="text-lg text-muted-foreground">Loading event data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-20 pb-12 px-4">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 gradient-purple-blue bg-clip-text text-transparent">
-            Create New Event
+            Update Event
           </h1>
           <p className="text-muted-foreground">
-            Fill in the details below to create and publish your event
+            Modify the event details below
           </p>
         </div>
 
@@ -99,7 +140,7 @@ export default function CreateEvent() {
           <CardHeader>
             <CardTitle>Event Details</CardTitle>
             <CardDescription>
-              Provide information about your event
+              Update the information for your event
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -236,14 +277,14 @@ export default function CreateEvent() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" size="lg" className="flex-1">
-                  Create Event
+                <Button type="submit" size="lg" className="flex-1" disabled={isLoading}>
+                  {isLoading ? 'Updating...' : 'Update Event'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   size="lg"
-                  onClick={() => navigate('/events')}
+                  onClick={() => navigate(`/events/${id}`)}
                 >
                   Cancel
                 </Button>
