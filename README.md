@@ -208,11 +208,12 @@ Every microservice has:
 
 | Name                | BITS ID | Contribution                                                                          |
 | ------------------- | ------- | ------------------------------------------------------------------------------------- |
-| **Samarth Agarwal** | 93034   | Event service, Design Patterns (API Gateway, Saga, CQRS), Microservices logic, Architectural Diagram and Swagger Documentation, Circuit Breaker Pattern |
-| **Syed Suhana**     | 93084   | Feedback service, notification services, Integration of frontend and backend using axios, kafka implementation  |
 | **Omi Sneha**       | 93011   | Ticket service, Documentation, Bruno Collections, Frontend            |
 | **Nekha S Thomas**  | 93022   | Notification service, Architecture diagrams,Dockerization, Kubernetes deployments, Frontend    |
+| **Samarth Agarwal** | 93034   | Event service, Design Patterns (API Gateway, Saga, CQRS), Microservices logic, Architectural Diagram and Swagger Documentation, Circuit Breaker Pattern |
 | **Keerthana Sen**   | 93035   | Attendee service ,Dockerization, Kubernetes                    |
+| **Syed Suhana**     | 93084   | Feedback service, notification services, Integration of frontend and backend using axios, kafka implementation  |
+
 
 ## 9. Running the Project
 **Prerequisites**
