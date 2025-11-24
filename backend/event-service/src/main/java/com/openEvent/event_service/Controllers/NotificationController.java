@@ -35,42 +35,97 @@ public class NotificationController {
 
     @GetMapping
     @Operation(summary = "Get all notifications", description = "Retrieve a list of all notifications.")
-    public ResponseEntity<List<Notification>> getAllNotifications() {
-        return ResponseEntity.ok(notificationService.getAllNotifications());
+    public ResponseEntity<?> getAllNotifications() {
+        try {
+            List<Notification> notifications = notificationService.getAllNotifications();
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to retrieve notifications: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
     @PostMapping
     @Operation(summary = "Create notification", description = "Create a new notification.")
-    public ResponseEntity<Notification> createNotification(@RequestBody Notification notification) {
-        Notification created = notificationService.createNotification(notification);
-        return ResponseEntity.status(201).body(created);
+    public ResponseEntity<?> createNotification(@RequestBody Notification notification) {
+        try {
+            Notification created = notificationService.createNotification(notification);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to create notification: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get notification by ID", description = "Retrieve a notification by its unique ID.")
-    public ResponseEntity<Notification> getNotificationById(@PathVariable Long id) {
-        Notification notification = notificationService.getNotificationById(id);
-        return ResponseEntity.ok(notification);
+    public ResponseEntity<?> getNotificationById(@PathVariable Long id) {
+        try {
+            Notification notification = notificationService.getNotificationById(id);
+            return ResponseEntity.ok(notification);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Notification not found with ID: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to retrieve notification: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update notification", description = "Update an existing notification by its ID.")
-    public ResponseEntity<Notification> updateNotification(@PathVariable Long id, @RequestBody Notification notificationDetails) {
-        Notification updated = notificationService.updateNotification(id, notificationDetails);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<?> updateNotification(@PathVariable Long id, @RequestBody Notification notificationDetails) {
+        try {
+            Notification updated = notificationService.updateNotification(id, notificationDetails);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Notification not found with ID: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to update notification: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete notification", description = "Delete a notification by its unique ID.")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
-        notificationService.deleteNotification(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
+        try {
+            notificationService.deleteNotification(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Notification deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Notification not found with ID: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to delete notification: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
-    private ResponseEntity<Map<String, String>> handleException(Exception ex) {
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("error", "An unexpected error occurred");
-        errorResponse.put("details", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    @PutMapping("/{id}/read")
+    @Operation(summary = "Mark notification as read", description = "Mark a notification as read by its ID.")
+    public ResponseEntity<?> markNotificationAsRead(@PathVariable Long id) {
+        try {
+            Notification updated = notificationService.markAsRead(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Notification not found with ID: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to mark notification as read: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 }

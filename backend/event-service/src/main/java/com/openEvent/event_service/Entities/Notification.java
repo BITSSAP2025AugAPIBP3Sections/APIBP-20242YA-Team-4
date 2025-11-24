@@ -30,14 +30,18 @@ public class Notification {
     @org.hibernate.annotations.CreationTimestamp
     private LocalDateTime sentAt;
 
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead = false;
+
     public Notification() { }
 
-    public Notification(Long id, String title, String message, String recipient, LocalDateTime sentAt) {
+    public Notification(Long id, String title, String message, String recipient, LocalDateTime sentAt, Boolean isRead) {
         this.id = id;
         this.title = title;
         this.message = message;
         this.recipient = recipient;
         this.sentAt = sentAt;
+        this.isRead = isRead;
     }
 
     public Long getId() { return id; }
@@ -54,4 +58,7 @@ public class Notification {
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
+
+    public Boolean getIsRead() { return isRead; }
+    public void setIsRead(Boolean isRead) { this.isRead = isRead; }
 }
