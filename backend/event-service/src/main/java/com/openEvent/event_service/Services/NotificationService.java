@@ -43,6 +43,12 @@ public class NotificationService {
         notificationRepository.delete(existing);
     }
 
+    public Notification markAsRead(Long id) {
+        Notification notification = getNotificationById(id);
+        notification.setIsRead(true);
+        return notificationRepository.save(notification);
+    }
+
     // New helper method for saga usage
     public Notification sendBookingNotification(Long userId, String title, String message) {
         String recipient = "user:" + userId; 

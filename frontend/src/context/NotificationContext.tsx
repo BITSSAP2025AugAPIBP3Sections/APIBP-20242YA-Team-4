@@ -48,16 +48,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         
         // Transform backend notifications to frontend format
         const transformed = userNotifications.map((n: any) => {
-          const id = n.id.toString();
-          // Check if this notification exists in current state to preserve read status
-          const existingNotif = notifications.find(existing => existing.id === id);
-          
           return {
-            id: id,
+            id: n.id.toString(),
             type: n.title.includes('Payment') ? 'success' as const : 'info' as const,
             message: n.message,
             timestamp: new Date(n.sentAt),
-            read: existingNotif ? existingNotif.read : false, // Preserve read status
+            read: n.isRead || false, // Use database read status
           };
         });
         
@@ -82,21 +78,47 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     setNotifications(prev => [newNotification, ...prev]);
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif => notif.id === id ? { ...notif, read: true } : notif)
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      // Mark as read in database
+      await notificationAPI.markAsRead(parseInt(id));
+      // Update UI immediately
+      setNotifications(prev =>
+        prev.map(notif => notif.id === id ? { ...notif, read: true } : notif)
+      );
+    } catch (error) {
+      // If API fails, still update UI
+      setNotifications(prev =>
+        prev.map(notif => notif.id === id ? { ...notif, read: true } : notif)
+      );
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      // Mark all as read in UI immediately
+      setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+      // Then call API for each notification
+      await Promise.all(
+        notifications
+          .filter(n => !n.read)
+          .map(n => notificationAPI.markAsRead(parseInt(n.id)))
+      );
+    } catch (error) {
+      // Already updated UI, so just log error silently
+    }
   };
 
-  const clearNotification = (id: string) => {
-    // Add to deleted IDs to prevent from showing again
-    deletedIdsRef.current.add(id);
-    // Remove from current list
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  const clearNotification = async (id: string) => {
+    try {
+      // Delete from database
+      await notificationAPI.deleteNotification(parseInt(id));
+      // Remove from current list
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    } catch (error) {
+      // If deletion fails, still remove from UI
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;

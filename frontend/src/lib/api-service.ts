@@ -204,6 +204,18 @@ export const notificationAPI = {
     const res = await api.get("/api/v1/notifications");
     return res.data;
   },
+
+  // MARK NOTIFICATION AS READ
+  markAsRead: async (notificationId: number) => {
+    const res = await api.put(`/api/v1/notifications/${notificationId}/read`);
+    return res.data;
+  },
+
+  // DELETE NOTIFICATION
+  deleteNotification: async (notificationId: number) => {
+    const res = await api.delete(`/api/v1/notifications/${notificationId}`);
+    return res.data;
+  },
 };
 
 export default api;
