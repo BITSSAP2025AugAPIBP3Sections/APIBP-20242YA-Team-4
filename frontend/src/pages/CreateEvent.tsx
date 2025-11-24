@@ -60,8 +60,6 @@ export default function CreateEvent() {
         capacity: formData.capacity ? parseInt(formData.capacity) : 100,
         imageUrl: formData.imageUrl || undefined,
       };
-
-      console.log('🚀 Creating event:', eventData);
       
       await eventAPI.createEvent(eventData);
 
@@ -69,7 +67,6 @@ export default function CreateEvent() {
       navigate('/events');
       
     } catch (error) {
-      console.error("❌ Event creation error:", error);
       const errorMessage = error && typeof error === 'object' && 'response' in error 
         ? (error as any)?.response?.data?.error || "Failed to create event"
         : "Failed to create event";

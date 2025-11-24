@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import EventCard from "@/components/EventCard";
 import { eventAPI } from "@/lib/api-service";
 import { toast } from "sonner";
@@ -11,16 +12,16 @@ const EventsList = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [allEvents, setAllEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 6;
 
   // Fetch events from backend
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const events = await eventAPI.getAllEvents();
-        console.log('✅ Fetched events:', events);
         setAllEvents(events);
       } catch (error) {
-        console.error('❌ Failed to fetch events:', error);
         toast.error("Failed to load events");
       } finally {
         setIsLoading(false);
@@ -48,6 +49,22 @@ const EventsList = () => {
     
     return matchesSearch && matchesCategory;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  const indexOfLastEvent = currentPage * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (isLoading) {
     return (
@@ -104,8 +121,8 @@ const EventsList = () => {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredEvents.length > 0 ? (
-          filteredEvents.map((event) => <EventCard key={event.id} {...event} />)
+        {currentEvents.length > 0 ? (
+          currentEvents.map((event) => <EventCard key={event.id} {...event} />)
         ) : (
           <div className="col-span-full text-center py-12">
             <p className="text-lg text-muted-foreground">
@@ -115,8 +132,51 @@ const EventsList = () => {
         )}
       </div>
 
-      {/* Results Count */}
-      {filteredEvents.length > 0 && (
+      {/* Pagination Controls */}
+      {filteredEvents.length > 0 && totalPages > 1 && (
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNum)}
+                  className="min-w-[40px]"
+                >
+                  {pageNum}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            Showing {indexOfFirstEvent + 1} - {Math.min(indexOfLastEvent, filteredEvents.length)} of {filteredEvents.length} events
+          </p>
+        </div>
+      )}
+
+      {/* Results Count - Only show when no pagination */}
+      {filteredEvents.length > 0 && totalPages <= 1 && (
         <div className="mt-8 text-center text-muted-foreground">
           Showing {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""}
         </div>
