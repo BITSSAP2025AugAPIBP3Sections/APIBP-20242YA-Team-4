@@ -49,9 +49,7 @@ export default function PaymentPage() {
         paymentMethod: "CREDIT_CARD"
       };
 
-      console.log('💳 Initiating payment:', paymentData);
       const payment = await paymentAPI.initiatePayment(paymentData);
-      console.log('✅ Payment created:', payment);
 
       // Step 2: Create Ticket
       const ticketData = {
@@ -61,16 +59,13 @@ export default function PaymentPage() {
         status: "BOOKED"
       };
 
-      console.log('🎫 Creating ticket:', ticketData);
       const ticket = await ticketAPI.createTicket(ticketData);
-      console.log('✅ Ticket created:', ticket);
 
       // Success!
       sonnerToast.success("Ticket booked successfully!");
       
       navigate('/my-tickets');
     } catch (error) {
-      console.error('❌ Payment/Ticket error:', error);
       sonnerToast.error("Payment failed. Please try again.");
     } finally {
       setProcessing(false);

@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, ArrowLeft, Ticket } from "lucide-react";
+import { Calendar, MapPin, Users, DollarSign, ArrowLeft, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
+import { eventAPI, feedbackAPI, attendeeAPI, ticketAPI } from "@/lib/api-service";
 import { toast } from "sonner";
-import { eventAPI } from "@/lib/api-service";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 const EventDetails = () => {
   const { id } = useParams();
@@ -14,31 +24,73 @@ const EventDetails = () => {
   const { user } = useAuth();
   const [event, setEvent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [feedbackUsers, setFeedbackUsers] = useState<Map<number, any>>(new Map());
+  const [userFeedback, setUserFeedback] = useState<any>(null);
+  const [hasTicket, setHasTicket] = useState(false);
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
 
-  // Fetch event details from backend
+  // Fetch event details and feedback from backend
   useEffect(() => {
-    const fetchEventDetails = async () => {
+    const loadEventAndFeedback = async () => {
       if (!id) return;
       
       try {
-        console.log('🔍 Fetching event details for ID:', id);
         const eventData = await eventAPI.getEventById(id);
-        console.log('✅ Fetched event:', eventData);
-        console.log('💰 Price from backend:', eventData.price);
-        console.log('👥 Capacity from backend:', eventData.capacity);
-        console.log('📅 Event date from backend:', eventData.eventDate);
         setEvent(eventData);
+        setIsLoading(false);
+
+        // Fetch feedback for this event
+        try {
+          const eventFeedback = await feedbackAPI.getFeedbackByEvent(parseInt(id));
+          setFeedbacks(eventFeedback);
+
+          // Fetch user details for each feedback
+          const userDetailsMap = new Map();
+          await Promise.all(
+            eventFeedback.map(async (fb: any) => {
+              try {
+                const userDetails = await attendeeAPI.getById(fb.userId.toString());
+                userDetailsMap.set(fb.userId, userDetails);
+              } catch (error) {
+                // User not found, use fallback
+                userDetailsMap.set(fb.userId, { fullName: 'Anonymous User' });
+              }
+            })
+          );
+          setFeedbackUsers(userDetailsMap);
+        } catch (error) {
+          // No feedback yet
+          setFeedbacks([]);
+        }
+
+        // Check if current user has attended this event and can leave feedback
+        if (user && user.role !== 'ORGANIZER') {
+          try {
+            const userTickets = await ticketAPI.getUserTickets(parseInt(user.id));
+            const hasEventTicket = userTickets.some((ticket: any) => 
+              ticket.eventId === parseInt(id) && ticket.status !== 'CANCELLED'
+            );
+            setHasTicket(hasEventTicket);
+
+            // Check if user already submitted feedback
+            if (hasEventTicket) {
+              const userFeedbacks = await feedbackAPI.getFeedbackByUser(parseInt(user.id));
+              const existingFeedback = userFeedbacks.find((fb: any) => fb.eventId === parseInt(id));
+              setUserFeedback(existingFeedback || null);
+            }
+          } catch (error) {
+            setHasTicket(false);
+          }
+        }
       } catch (error) {
-        console.error('❌ Failed to fetch event:', error);
         toast.error("Failed to load event details");
-        navigate('/events');
-      } finally {
         setIsLoading(false);
       }
     };
 
-    fetchEventDetails();
-  }, [id, navigate]);
+    loadEventAndFeedback();
+  }, [id, user]);
 
   if (isLoading) {
     return (
@@ -83,7 +135,6 @@ const EventDetails = () => {
       toast.success("Event deleted successfully!");
       navigate('/events');
     } catch (error) {
-      console.error("❌ Delete event error:", error);
       toast.error("Failed to delete event");
     }
   };
@@ -101,6 +152,27 @@ const EventDetails = () => {
       sports: "bg-destructive/10 text-destructive border-destructive/20",
     };
     return colors[cat.toLowerCase()] || colors.workshop;
+  };
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating ? 'fill-accent text-accent' : 'text-muted-foreground'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const calculateAverageRating = () => {
+    if (feedbacks.length === 0) return 0;
+    const sum = feedbacks.reduce((acc, fb) => acc + fb.rating, 0);
+    return (sum / feedbacks.length).toFixed(1);
   };
 
   return (
@@ -186,7 +258,7 @@ const EventDetails = () => {
                 onClick={handleBookTicket}
                 className="w-full bg-primary hover:bg-primary-hover h-12 text-base font-semibold mb-4"
               >
-                <Ticket className="mr-2 h-5 w-5" />
+                <DollarSign className="mr-2 h-5 w-5" />
                 Book Tickets Now
               </Button>
             )}
@@ -212,6 +284,99 @@ const EventDetails = () => {
             )}
           </Card>
         </div>
+      </div>
+
+      {/* Reviews & Feedback Section */}
+      <div className="mt-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Reviews & Ratings</h2>
+          
+          {/* Write Review Button - Only for attendees who have tickets and event has passed */}
+          {user && user.role !== 'ORGANIZER' && hasTicket && event && new Date(event.eventDate) < new Date() && (
+            <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant={userFeedback ? "outline" : "default"}>
+                  <Star className="mr-2 h-4 w-4" />
+                  {userFeedback ? 'Update Review' : 'Write a Review'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>
+                    {userFeedback ? 'Update Your Review' : 'Write a Review'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Share your experience at {event.title}
+                  </DialogDescription>
+                </DialogHeader>
+                <FeedbackForm
+                  eventId={id!}
+                  eventTitle={event.title}
+                  existingFeedback={userFeedback || null}
+                  onSuccess={() => {
+                    setFeedbackDialogOpen(false);
+                    window.location.reload(); // Refresh to show new feedback
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+        
+        {feedbacks.length > 0 ? (
+          <>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-1">
+                {renderStars(Math.round(parseFloat(calculateAverageRating())))}
+              </div>
+              <span className="text-lg font-semibold">{calculateAverageRating()}</span>
+              <span className="text-muted-foreground">({feedbacks.length} {feedbacks.length === 1 ? 'review' : 'reviews'})</span>
+            </div>
+
+            <div className="space-y-4">
+              {feedbacks.map((feedback) => {
+                const userDetails = feedbackUsers.get(feedback.userId);
+                const userName = userDetails?.fullName || 'Anonymous User';
+                const userInitials = userName.split(' ').map((n: string) => n[0]).join('').substring(0, 2);
+
+                return (
+                  <Card key={feedback.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {userInitials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-semibold">{userName}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              {renderStars(feedback.rating)}
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(feedback.createdAt).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground">{feedback.comment}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <Card className="p-8 text-center">
+            <Star className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">No reviews yet. Be the first to review this event!</p>
+          </Card>
+        )}
       </div>
     </div>
   );

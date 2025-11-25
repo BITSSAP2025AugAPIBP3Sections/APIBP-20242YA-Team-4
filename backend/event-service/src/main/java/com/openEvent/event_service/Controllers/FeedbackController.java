@@ -139,4 +139,26 @@ public class FeedbackController {
                     .body(Map.of("error", "Failed to delete feedback: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/event/{eventId}")
+    @Operation(summary = "Get feedback by event", description = "Retrieve all feedback for a specific event.")
+    public ResponseEntity<?> getFeedbackByEvent(@PathVariable Long eventId) {
+        try {
+            return ResponseEntity.ok(feedbackService.getFeedbackByEvent(eventId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch feedback: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get feedback by user", description = "Retrieve all feedback submitted by a specific user.")
+    public ResponseEntity<?> getFeedbackByUser(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(feedbackService.getFeedbackByUser(userId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch feedback: " + e.getMessage()));
+        }
+    }
 }

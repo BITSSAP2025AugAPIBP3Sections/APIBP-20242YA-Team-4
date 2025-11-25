@@ -17,7 +17,6 @@ import MyTickets from "./pages/MyTickets";
 import Profile from "./pages/Profile";
 import PaymentPage from "./pages/PaymentPage";
 import CreateEvent from "./pages/CreateEvent";
-import FeedbackPage from "./pages/FeedbackPage";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -46,7 +45,6 @@ const App = () => (
                   <Route path="/payment" element={<PaymentPage />} />
                   <Route path="/create-event" element={<CreateEvent />} />
                   <Route path="/update-event/:id" element={<UpdateEvent />} />
-                  <Route path="/feedback" element={<FeedbackPage />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="*" element={<NotFound />} />

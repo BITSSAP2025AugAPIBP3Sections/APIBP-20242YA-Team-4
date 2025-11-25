@@ -196,6 +196,49 @@ export const ticketAPI = {
 };
 
 // =============================
+// FEEDBACK API
+// =============================
+export const feedbackAPI = {
+  // SUBMIT FEEDBACK
+  submitFeedback: async (feedbackData: {
+    userId: number;
+    eventId: number;
+    comment: string;
+    rating: number;
+  }) => {
+    const res = await api.post("/api/v1/feedback", feedbackData);
+    return res.data;
+  },
+
+  // GET FEEDBACK BY EVENT
+  getFeedbackByEvent: async (eventId: number) => {
+    const res = await api.get(`/api/v1/feedback/event/${eventId}`);
+    return res.data;
+  },
+
+  // GET FEEDBACK BY USER
+  getFeedbackByUser: async (userId: number) => {
+    const res = await api.get(`/api/v1/feedback/user/${userId}`);
+    return res.data;
+  },
+
+  // UPDATE FEEDBACK
+  updateFeedback: async (feedbackId: number, feedbackData: {
+    comment?: string;
+    rating?: number;
+  }) => {
+    const res = await api.put(`/api/v1/feedback/${feedbackId}`, feedbackData);
+    return res.data;
+  },
+
+  // DELETE FEEDBACK
+  deleteFeedback: async (feedbackId: number) => {
+    const res = await api.delete(`/api/v1/feedback/${feedbackId}`);
+    return res.data;
+  },
+};
+
+// =============================
 // NOTIFICATION API
 // =============================
 export const notificationAPI = {

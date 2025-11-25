@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, QrCode, Trash2 } from "lucide-react";
+import { Calendar, MapPin, QrCode, Trash2, Star, Edit } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { ticketAPI, eventAPI } from "@/lib/api-service";
+import { ticketAPI, eventAPI, feedbackAPI } from "@/lib/api-service";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -17,11 +17,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 const MyTickets = () => {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userFeedback, setUserFeedback] = useState<Map<number, any>>(new Map());
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
 
   const fetchMyTickets = async () => {
     if (!user) {
@@ -53,12 +65,23 @@ const MyTickets = () => {
         })
       );
 
-      // Filter out cancelled tickets
       const activeTickets = ticketsWithEventData.filter(ticket => ticket.status !== 'CANCELLED');
       setTickets(activeTickets);
+
+      // Fetch user's feedback
+      try {
+        const feedbacks = await feedbackAPI.getFeedbackByUser(parseInt(user.id));
+        const feedbackMap = new Map();
+        feedbacks.forEach((fb: any) => {
+          feedbackMap.set(fb.eventId, fb);
+        });
+        setUserFeedback(feedbackMap);
+      } catch (error) {
+        // No feedback yet
+      }
     } catch (error) {
       toast.error("Failed to load tickets");
-      setTickets([]); // Set empty array on error
+      setTickets([]);
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +89,6 @@ const MyTickets = () => {
 
   useEffect(() => {
     fetchMyTickets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleCancelTicket = async (ticketId: number, eventTitle: string) => {
@@ -136,11 +158,7 @@ const MyTickets = () => {
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="destructive" 
-                      className="w-full mt-4"
-                      size="sm"
-                    >
+                    <Button variant="destructive" className="w-full mt-4" size="sm">
                       <Trash2 className="mr-2 h-4 w-4" />
                       Cancel Ticket
                     </Button>
@@ -164,6 +182,54 @@ const MyTickets = () => {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+
+                {ticket.eventDate && new Date(ticket.eventDate) < new Date() && (
+                  <Dialog open={feedbackDialogOpen && selectedTicket?.id === ticket.id} onOpenChange={(open) => {
+                    setFeedbackDialogOpen(open);
+                    if (!open) setSelectedTicket(null);
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant={userFeedback.has(ticket.eventId) ? "outline" : "default"}
+                        className="w-full mt-2"
+                        size="sm"
+                        onClick={() => setSelectedTicket(ticket)}
+                      >
+                        {userFeedback.has(ticket.eventId) ? (
+                          <>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Update Review
+                          </>
+                        ) : (
+                          <>
+                            <Star className="mr-2 h-4 w-4" />
+                            Write a Review
+                          </>
+                        )}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {userFeedback.has(ticket.eventId) ? 'Update Your Review' : 'Write a Review'}
+                        </DialogTitle>
+                        <DialogDescription>
+                          Share your experience at {ticket.eventTitle}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <FeedbackForm
+                        eventId={ticket.eventId.toString()}
+                        eventTitle={ticket.eventTitle}
+                        existingFeedback={userFeedback.get(ticket.eventId) || null}
+                        onSuccess={() => {
+                          setFeedbackDialogOpen(false);
+                          setSelectedTicket(null);
+                          fetchMyTickets();
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
             </Card>
           ))}

@@ -96,8 +96,6 @@ export default function UpdateEvent() {
         capacity: formData.capacity ? parseInt(formData.capacity) : 100,
         imageUrl: formData.imageUrl || undefined,
       };
-
-      console.log('🔄 Updating event:', eventData);
       
       await eventAPI.updateEvent(id!, eventData);
 
@@ -105,7 +103,6 @@ export default function UpdateEvent() {
       navigate(`/events/${id}`);
       
     } catch (error) {
-      console.error("❌ Event update error:", error);
       toast.error("Failed to update event");
     } finally {
       setIsLoading(false);
