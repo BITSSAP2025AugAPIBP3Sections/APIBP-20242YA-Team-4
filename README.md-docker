@@ -1,0 +1,36 @@
+# Docker & Kubernetes Deployment
+
+## Dockerization
+
+Build Docker images for the backend and frontend:
+
+```bash
+# Backend
+    docker build -t event-backend:latest .
+
+# Frontend
+    docker build -t event-frontend:latest .
+
+# Check the images
+    docker images
+
+Kubernetes Deployment
+    1. Ensure your Kubernetes cluster can access local Docker images.
+        For Docker Desktop: Images are available by default.
+        For Minikube: Run eval $(minikube docker-env) before building images.
+
+    2. Apply the Kubernetes manifests:
+    ```bash
+        kubectl apply -f k8s/backend-deployment.yaml
+        kubectl apply -f k8s/frontend-deployment.yaml
+        kubectl apply -f k8s/frontend-deployment.yaml
+        kubectl apply -f k8s/ingress.yaml
+    ```
+    3. Verify the deployments and services:
+    ```bash
+        kubectl get pods
+        kubectl get svc
+        kubectl get ingress
+    ```
+
+

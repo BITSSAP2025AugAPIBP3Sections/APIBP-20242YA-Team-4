@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-backend
+  template:
+    metadata:
+      labels:
+        app: event-backend
+    spec:
+      containers:
+        - name: event-backend
+          image: event-backend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql-service:3306/eventdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: <ur-password>
