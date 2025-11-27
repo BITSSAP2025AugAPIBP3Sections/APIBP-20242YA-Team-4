@@ -6,10 +6,10 @@ Build Docker images for the backend and frontend:
 
 ```bash
 # Backend
-    docker build -t event-backend:latest .
+    docker build -t <name>-event-backend:latest .
 
 # Frontend
-    docker build -t event-frontend:latest .
+    docker build -t <name>-event-frontend:latest .
 
 # Check the images
     docker images
@@ -23,7 +23,7 @@ Kubernetes Deployment
     ```bash
         kubectl apply -f k8s/backend-deployment.yaml
         kubectl apply -f k8s/frontend-deployment.yaml
-        kubectl apply -f k8s/frontend-deployment.yaml
+        kubectl apply -f k8s/mysql.yaml
         kubectl apply -f k8s/ingress.yaml
     ```
     3. Verify the deployments and services:
