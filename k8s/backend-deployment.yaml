@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: event-backend
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: event-backend
@@ -20,8 +20,21 @@ spec:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://mysql-service:3306/eventdb
+              value: jdbc:mysql://mysql-service:3306/eventsdb
             - name: SPRING_DATASOURCE_USERNAME
               value: root
             - name: SPRING_DATASOURCE_PASSWORD
-              value: <ur-password>
+              value:
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-backend-service
+spec:
+  selector:
+    app: event-backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

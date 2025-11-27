@@ -28,9 +28,9 @@ spec:
           image: mysql:8.0
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: <ur-password>
+              value:
             - name: MYSQL_DATABASE
-              value: eventdb
+              value: eventsdb
           ports:
             - containerPort: 3306
           volumeMounts:

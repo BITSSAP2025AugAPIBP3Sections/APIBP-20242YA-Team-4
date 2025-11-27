@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -16,9 +17,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors
+                        .configurationSource(request -> {
+                            CorsConfiguration config = new CorsConfiguration();
+                            config.addAllowedOrigin("*");
+                            config.addAllowedMethod("*");
+                            config.addAllowedHeader("*");
+                            config.setAllowCredentials(false);
+                            return config;
+                        })
+                )
                 .authorizeHttpRequests(authz -> authz
                         .anyRequest().permitAll()
                 );
+
         return http.build();
     }
 
