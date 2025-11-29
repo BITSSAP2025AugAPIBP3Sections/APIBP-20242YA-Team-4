@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-frontend
+  template:
+    metadata:
+      labels:
+        app: event-frontend
+    spec:
+      containers:
+        - name: event-frontend
+          image: event-frontend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-frontend-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: event-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
