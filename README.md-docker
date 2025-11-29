@@ -1,5 +1,7 @@
 # Docker & Kubernetes Deployment
 
+For Minikube: Run eval $(minikube docker-env) before building images.
+
 ## Dockerization
 
 Build Docker images for the backend and frontend:
@@ -17,7 +19,7 @@ Build Docker images for the backend and frontend:
 Kubernetes Deployment
     1. Ensure your Kubernetes cluster can access local Docker images.
         For Docker Desktop: Images are available by default.
-        For Minikube: Run eval $(minikube docker-env) before building images.
+        
 
     2. Apply the Kubernetes manifests:
     ```bash
